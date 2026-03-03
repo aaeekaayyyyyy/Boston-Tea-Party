@@ -1,0 +1,5 @@
+# Boston Tea Party 2.0 — RAG pipeline and tooling
+# Week 1: PageIndex spike; later: BM25 (e.g. rank-bm25), orchestration (LangChain/LlamaIndex), etc.
+
+pageindex>=0.2.5
+requests>=2.25.0,<3.0.0
