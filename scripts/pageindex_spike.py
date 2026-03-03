@@ -16,6 +16,24 @@ SOURCES = REPO_ROOT / "sources"
 REPORT_PATH = REPO_ROOT / "docs" / "pageindex_spike_report.md"
 
 
+def _load_dotenv():
+    """Load .env from repo root if PAGEINDEX_API_KEY is not already set."""
+    if os.environ.get("PAGEINDEX_API_KEY"):
+        return
+    env_file = REPO_ROOT / ".env"
+    if not env_file.exists():
+        return
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "=" in line:
+            key, _, value = line.partition("=")
+            key, value = key.strip(), value.strip().strip('"').strip("'")
+            if key and key not in os.environ:
+                os.environ[key] = value
+
+
 def find_sample_pdf():
     """Find one PDF under sources/ for the spike."""
     for d in [SOURCES / "irs_pubs", SOURCES / "irc"]:
@@ -27,6 +45,7 @@ def find_sample_pdf():
 
 
 def run_spike():
+    _load_dotenv()
     api_key = os.environ.get("PAGEINDEX_API_KEY", "").strip()
     pdf_path = find_sample_pdf()
 
