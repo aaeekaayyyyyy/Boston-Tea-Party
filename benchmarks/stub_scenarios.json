@@ -1,0 +1,62 @@
+[
+  {
+    "id": "STUB-001",
+    "question": "What is the tax rate for a single unmarried individual with taxable income of $30,000?",
+    "answer": "15% of taxable income",
+    "required_citations": ["26 USC 1(c)"],
+    "constraint_result": {
+      "eligible": true,
+      "conditions_met": ["filing_status_valid"]
+    },
+    "true_source_passages": [
+      {
+        "citation": "26 USC 1(c)",
+        "text": "There is hereby imposed on the taxable income of every individual (other than a surviving spouse as defined in section 2(a) or the head of a household as defined in section 2(b)) who is not a married individual (as defined in section 7703) a tax determined in accordance with the following table. If taxable income is not over $36,900, the tax is 15% of taxable income."
+      }
+    ],
+    "question_type": "factual_lookup",
+    "source_type": "irc",
+    "difficulty": "easy",
+    "component_tested": ["retrieval", "generation"]
+  },
+  {
+    "id": "STUB-002",
+    "question": "Can someone who is married but lived apart from their spouse for the last 6 months of 2024 and has a dependent child file as head of household?",
+    "answer": "Yes, you may file as head of household if you lived apart from your spouse for the last 6 months of the year and paid more than half the cost of keeping up a home for a qualifying child.",
+    "required_citations": ["IRS Pub. 501, Filing Status - Head of Household"],
+    "constraint_result": {
+      "eligible": true,
+      "conditions_met": ["lived_apart_6_months", "dependent_child", "paid_over_half_home_costs"]
+    },
+    "true_source_passages": [
+      {
+        "citation": "IRS Pub. 501, Filing Status - Head of Household",
+        "text": "You may be able to file as head of household if you meet all the following requirements: You are unmarried or considered unmarried on the last day of the year. You paid more than half the cost of keeping up a home for the year. A qualifying person lived with you in the home for more than half the year. Even if you are married, you are considered unmarried if your spouse did not live in your home during the last 6 months of the tax year."
+      }
+    ],
+    "question_type": "eligibility_determination",
+    "source_type": "irs_pubs",
+    "difficulty": "medium",
+    "component_tested": ["retrieval", "constraint_engine", "generation"]
+  },
+  {
+    "id": "STUB-003",
+    "question": "What are the requirements for claiming someone as a qualifying child dependent?",
+    "answer": "A qualifying child must meet four tests: relationship, age, residency, and support.",
+    "required_citations": ["IRS Pub. 501, Dependents - Qualifying Child"],
+    "constraint_result": {
+      "eligible": true,
+      "conditions_met": ["relationship_test", "age_test", "residency_test", "support_test"]
+    },
+    "true_source_passages": [
+      {
+        "citation": "IRS Pub. 501, Dependents - Qualifying Child",
+        "text": "A qualifying child must satisfy four tests: Relationship Test, Age Test, Residency Test, and Support Test. Relationship: The child must be your son, daughter, stepchild, foster child, brother, sister, half brother, half sister, stepbrother, stepsister, or a descendant of any of them. Age: The child must be under age 19 at the end of the year, or under age 24 if a full-time student, or any age if permanently and totally disabled. Residency: The child must have lived with you for more than half of the year. Support: The child must not have provided more than half of his or her own support for the year."
+      }
+    ],
+    "question_type": "factual_lookup",
+    "source_type": "irs_pubs",
+    "difficulty": "easy",
+    "component_tested": ["retrieval", "generation"]
+  }
+]
