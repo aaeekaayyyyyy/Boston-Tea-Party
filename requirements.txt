@@ -1,5 +1,13 @@
 # Boston Tea Party 2.0 — RAG pipeline and tooling
 # Week 1: PageIndex spike; later: BM25 (e.g. rank-bm25), orchestration (LangChain/LlamaIndex), etc.
 
+# -- RAG pipeline --
 pageindex>=0.2.5
 requests>=2.25.0,<3.0.0
+
+# -- eval harness --
+ragas>=0.4.0
+openai>=1.0.0
+transformers>=4.30.0,<5.0.0  # HHEM custom model breaks on transformers 5.x
+torch>=2.0.0
+sentencepiece
