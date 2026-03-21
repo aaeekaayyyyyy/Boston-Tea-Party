@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 *.so
 .Python
+*.pyc
 env/
 venv/
 .venv/
@@ -18,6 +19,10 @@ venv/
 .DS_Store
 Thumbs.db
 
+# Environment
+.env
+
 # Project-specific
 *.pdf
 *.log
+eval/results/
