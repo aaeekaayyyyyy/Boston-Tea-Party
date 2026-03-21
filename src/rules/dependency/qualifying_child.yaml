@@ -1,0 +1,221 @@
+# Pub 501: https://www.irs.gov/pubs/p501 - Qualifying Child
+# Relationship test
+- rule_id: qualifying_child_relationship
+  rule_type: decision
+  target: child_meets_relationship_test
+  conditions:
+    - node: child_relationship
+      operator: in
+      value:
+        - son
+        - daughter
+        - stepchild
+        - foster_child
+        - brother
+        - sister
+        - half_brother
+        - half_sister
+        - stepbrother
+        - stepsister
+        - descendant_of_any_above
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_PUB_501_QUALIFYING_CHILD: https://www.irs.gov/pubs/p501
+
+- rule_id: qualifying_child_relationship_fail
+  rule_type: decision
+  target: child_meets_relationship_test
+  conditions:
+    - node: child_relationship
+      operator: not_in
+      value:
+        - son
+        - daughter
+        - stepchild
+        - foster_child
+        - brother
+        - sister
+        - half_brother
+        - half_sister
+        - stepbrother
+        - stepsister
+        - descendant_of_any_above
+  actions:
+    type: set
+    value: false
+  citations:
+    - IRS_PUB_501_QUALIFYING_CHILD: https://www.irs.gov/pubs/p501
+
+# Age test
+- rule_id: qualifying_child_age_under_19
+  rule_type: decision
+  target: child_meets_age_test
+  conditions:
+    - node: child_age_on_1231
+      operator: lt
+      value: 19
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_PUB_501_QUALIFYING_CHILD: https://www.irs.gov/pubs/p501
+
+- rule_id: qualifying_child_age_student_under_24
+  rule_type: decision
+  target: child_meets_age_test
+  conditions:
+    - node: child_age_on_1231
+      operator: gte
+      value: 19
+    - node: child_age_on_1231
+      operator: lt
+      value: 24
+    - node: child_full_time_student
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_PUB_501_QUALIFYING_CHILD: https://www.irs.gov/pubs/p501
+
+- rule_id: qualifying_child_age_permanently_disabled
+  rule_type: decision
+  target: child_meets_age_test
+  conditions:
+    - node: child_permanently_disabled
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_PUB_501_QUALIFYING_CHILD: https://www.irs.gov/pubs/p501
+
+# Residency test
+- rule_id: qualifying_child_residency_pass
+  rule_type: decision
+  target: child_meets_residency_test
+  conditions:
+    - node: child_lived_with_taxpayer_more_than_half_of_year
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_PUB_501_QUALIFYING_CHILD: https://www.irs.gov/pubs/p501
+
+- rule_id: qualifying_child_residency_fail
+  rule_type: decision
+  target: child_meets_residency_test
+  conditions:
+    - node: child_lived_with_taxpayer_more_than_half_of_year
+      operator: eq
+      value: false
+  actions:
+    type: set
+    value: false
+  citations:
+    - IRS_PUB_501_QUALIFYING_CHILD: https://www.irs.gov/pubs/p501
+
+# Support test
+- rule_id: qualifying_child_support_pass
+  rule_type: decision
+  target: child_meets_support_test
+  conditions:
+    - node: child_provided_own_support
+      operator: eq
+      value: false
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_PUB_501_QUALIFYING_CHILD: https://www.irs.gov/pubs/p501
+
+# Joint return test
+- rule_id: qualifying_child_joint_return_pass
+  rule_type: decision
+  target: child_meets_joint_return_test
+  conditions:
+    - node: child_filed_joint_return
+      operator: eq
+      value: false
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_PUB_501_QUALIFYING_CHILD: https://www.irs.gov/pubs/p501
+
+# Citizenship test
+- rule_id: qualifying_child_citizenship_pass
+  rule_type: decision
+  target: child_meets_citizenship_test
+  conditions:
+    - node: child_is_us_citizen_resident
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_PUB_501_QUALIFYING_CHILD: https://www.irs.gov/pubs/p501
+
+# Aggregate: qualifying child
+- rule_id: qualifying_child_all_tests_pass
+  rule_type: decision
+  target: child_is_qualifying_child
+  conditions:
+    - node: child_meets_relationship_test
+      operator: eq
+      value: true
+    - node: child_meets_age_test
+      operator: eq
+      value: true
+    - node: child_meets_residency_test
+      operator: eq
+      value: true
+    - node: child_meets_support_test
+      operator: eq
+      value: true
+    - node: child_meets_joint_return_test
+      operator: eq
+      value: true
+    - node: child_meets_citizenship_test
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_PUB_501_QUALIFYING_CHILD: https://www.irs.gov/pubs/p501
+
+- rule_id: qualifying_child_any_test_fail
+  rule_type: decision
+  target: child_is_qualifying_child
+  conditions_any:
+    - node: child_meets_relationship_test
+      operator: eq
+      value: false
+    - node: child_meets_age_test
+      operator: eq
+      value: false
+    - node: child_meets_residency_test
+      operator: eq
+      value: false
+    - node: child_meets_support_test
+      operator: eq
+      value: false
+    - node: child_meets_joint_return_test
+      operator: eq
+      value: false
+    - node: child_meets_citizenship_test
+      operator: eq
+      value: false
+  actions:
+    type: set
+    value: false
+  citations:
+    - IRS_PUB_501_QUALIFYING_CHILD: https://www.irs.gov/pubs/p501

@@ -1,0 +1,54 @@
+# Estimated tax payments
+# Has estimated payments
+- rule_id: has_estimated_payments
+  rule_type: decision
+  target: has_estimated_payments
+  conditions:
+    - node: estimated_tax_payments_made
+      operator: gt
+      value: 0
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_1040_ES: https://www.irs.gov/forms-pubs/about-form-1040-es
+
+- rule_id: no_estimated_payments
+  rule_type: decision
+  target: has_estimated_payments
+  conditions:
+    - node: estimated_tax_payments_made
+      operator: eq
+      value: 0
+  actions:
+    type: set
+    value: false
+  citations:
+    - IRS_1040_ES: https://www.irs.gov/forms-pubs/about-form-1040-es
+
+# Documentation
+- rule_id: estimated_payments_require_documentation
+  rule_type: decision
+  target: estimated_payments_require_documentation
+  conditions:
+    - node: has_estimated_payments
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_1040_ES: https://www.irs.gov/forms-pubs/about-form-1040-es
+
+- rule_id: estimated_payments_document_types
+  rule_type: documentation
+  target: estimated_payments_document_types
+  conditions:
+    - node: has_estimated_payments
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: [payment_receipts, bank_statements]
+  citations:
+    - IRS_1040_ES: https://www.irs.gov/forms-pubs/about-form-1040-es

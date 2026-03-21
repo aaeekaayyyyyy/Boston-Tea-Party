@@ -1,0 +1,33 @@
+# Education Credits: https://www.irs.gov/credits-deductions/individuals/education-credits
+# May claim education credit
+- rule_id: may_claim_education_credit
+  rule_type: decision
+  target: may_claim_education_credit
+  conditions:
+    - node: qualified_education_expenses_paid
+      operator: gt
+      value: 0
+    - node: education_expenses_documented
+      operator: eq
+      value: true
+    - node: modified_agi_under_education_limit
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_EDUCATION_CREDITS: https://www.irs.gov/credits-deductions/individuals/education-credits
+
+- rule_id: may_not_claim_education_credit_no_expenses
+  rule_type: decision
+  target: may_claim_education_credit
+  conditions:
+    - node: qualified_education_expenses_paid
+      operator: eq
+      value: 0
+  actions:
+    type: set
+    value: false
+  citations:
+    - IRS_EDUCATION_CREDITS: https://www.irs.gov/credits-deductions/individuals/education-credits

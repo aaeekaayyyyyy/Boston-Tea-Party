@@ -1,0 +1,80 @@
+# Decision nodes - primary outputs and recommendations from the rule engine
+# These nodes represent eligibility decisions, recommendations, and key outcomes
+
+# --- Filing status ---
+valid_filing_statuses:
+  description: List of valid filing statuses for taxpayer
+  type: list
+  item_type: string
+  enum:
+    - single
+    - married_filing_jointly
+    - married_filing_separately
+    - head_of_household
+    - qualifying_surviving_spouse
+  depends_on:
+    - marital_status_on_1231
+    - spouse_willing_to_file_jointly
+    - eligible_for_qss
+    - eligible_for_hoh
+    - has_qualifying_person
+    - considered_unmarried
+  rules_file: src/rules/filing_status/filing_status.yaml
+  action_type: append
+
+# --- Deduction method ---
+may_claim_standard_deduction:
+  description: Taxpayer may claim standard deduction
+  type: boolean
+  depends_on: [valid_filing_statuses, did_not_itemize]
+  rules_file: src/rules/deductions/standard_deduction.yaml
+
+standard_deduction_additional_amount_eligible:
+  description: Taxpayer eligible for additional standard deduction (65/blind)
+  type: boolean
+  depends_on:
+    - taxpayer_age_65_or_older
+    - taxpayer_blind
+    - spouse_age_65_or_older
+    - spouse_blind
+  rules_file: src/rules/deductions/standard_deduction.yaml
+
+recommended_deduction_method:
+  description: Recommended deduction method (standard or itemized)
+  type: string
+  enum:
+    - standard
+    - itemized
+  depends_on: [should_itemize, may_claim_standard_deduction]
+  note: Use should_itemize=true -> itemized; else standard
+
+# --- Credits ---
+may_claim_child_tax_credit:
+  description: Taxpayer may claim Child Tax Credit
+  type: boolean
+  depends_on: [number_of_qualifying_children, child_tax_credit_agi_under_limit]
+  rules_file: src/rules/taxes_and_credits/child_tax_credit.yaml
+
+may_claim_other_dependent_credit:
+  description: Taxpayer may claim Credit for Other Dependents
+  type: boolean
+  depends_on: [number_of_other_dependents]
+  rules_file: src/rules/taxes_and_credits/other_dependent_credit.yaml
+
+may_claim_earned_income_credit:
+  description: Taxpayer may claim Earned Income Credit
+  type: boolean
+  depends_on:
+    - earned_income_amount
+    - investment_income_under_eic_limit
+    - earned_income_credit_filing_status_eligible
+  rules_file: src/rules/taxes_and_credits/earned_income_credit.yaml
+
+may_claim_education_credit:
+  description: Taxpayer may claim education credit (AOTC/Lifetime Learning)
+  type: boolean
+  depends_on:
+    - qualified_education_expenses_paid
+    - education_expenses_documented
+    - modified_agi_under_education_limit
+  rules_file: src/rules/taxes_and_credits/education_credits.yaml

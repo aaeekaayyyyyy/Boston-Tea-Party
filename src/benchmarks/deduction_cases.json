@@ -1,0 +1,99 @@
+{
+  "description": "Benchmark cases for deduction rules (standard vs itemized)",
+  "rules_files": [
+    "src/rules/deductions/itemized_deductions.yaml",
+    "src/rules/deductions/standard_deduction.yaml"
+  ],
+  "cases": [
+    {
+      "case_id": "STD_SINGLE_01",
+      "description": "Single filer, itemized does not exceed standard",
+      "facts": {
+        "valid_filing_statuses": ["single"],
+        "itemized_deductions_total": 5000,
+        "itemized_deductions_exceed_standard": false
+      },
+      "expected": {
+        "should_itemize": false,
+        "did_not_itemize": true,
+        "may_claim_standard_deduction": true,
+        "recommended_deduction_method": "standard"
+      }
+    },
+    {
+      "case_id": "STD_MFJ_01",
+      "description": "MFJ filer, standard deduction",
+      "facts": {
+        "valid_filing_statuses": ["married_filing_jointly"],
+        "itemized_deductions_total": 0,
+        "itemized_deductions_exceed_standard": false
+      },
+      "expected": {
+        "should_itemize": false,
+        "did_not_itemize": true,
+        "may_claim_standard_deduction": true,
+        "recommended_deduction_method": "standard"
+      }
+    },
+    {
+      "case_id": "STD_HOH_01",
+      "description": "HOH filer, standard deduction",
+      "facts": {
+        "valid_filing_statuses": ["head_of_household"],
+        "itemized_deductions_total": 10000,
+        "itemized_deductions_exceed_standard": false
+      },
+      "expected": {
+        "should_itemize": false,
+        "did_not_itemize": true,
+        "may_claim_standard_deduction": true,
+        "recommended_deduction_method": "standard"
+      }
+    },
+    {
+      "case_id": "ITEM_01",
+      "description": "Itemized deductions exceed standard",
+      "facts": {
+        "valid_filing_statuses": ["single"],
+        "itemized_deductions_total": 25000,
+        "itemized_deductions_exceed_standard": true
+      },
+      "expected": {
+        "should_itemize": true,
+        "did_not_itemize": false,
+        "may_claim_standard_deduction": false,
+        "recommended_deduction_method": "itemized"
+      }
+    },
+    {
+      "case_id": "STD_65_BLIND_01",
+      "description": "Single filer 65+, eligible for additional standard deduction",
+      "facts": {
+        "valid_filing_statuses": ["single"],
+        "itemized_deductions_exceed_standard": false,
+        "taxpayer_age_65_or_older": true,
+        "taxpayer_blind": false,
+        "spouse_age_65_or_older": false,
+        "spouse_blind": false
+      },
+      "expected": {
+        "should_itemize": false,
+        "may_claim_standard_deduction": true,
+        "standard_deduction_additional_amount_eligible": true
+      }
+    },
+    {
+      "case_id": "ITEM_MFJ_01",
+      "description": "MFJ with high itemized deductions",
+      "facts": {
+        "valid_filing_statuses": ["married_filing_jointly"],
+        "itemized_deductions_total": 35000,
+        "itemized_deductions_exceed_standard": true
+      },
+      "expected": {
+        "should_itemize": true,
+        "recommended_deduction_method": "itemized"
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+# Documentation requirements for income
+# Income documentation requirements aggregation
+- rule_id: income_documentation_requirements
+  rule_type: documentation
+  target: income_documentation_requirements
+  conditions:
+    - node: has_income
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: [W2, 1099_INT, 1099_DIV, 1099_B, 1099_NEC, Schedule_C]
+  citations:
+    - IRS_1040: https://www.irs.gov/forms-pubs/about-form-1040

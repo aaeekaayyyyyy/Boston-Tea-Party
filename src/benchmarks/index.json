@@ -1,0 +1,32 @@
+{
+  "description": "Benchmark index for 2025 Form 1040 tax rule engine",
+  "version": "1.0",
+  "files": [
+    {
+      "path": "src/benchmarks/filing_status_cases.json",
+      "domain": "filing_status",
+      "case_count": 7
+    },
+    {
+      "path": "src/benchmarks/deduction_cases.json",
+      "domain": "deductions",
+      "case_count": 6
+    },
+    {
+      "path": "src/benchmarks/credit_cases.json",
+      "domain": "credits",
+      "case_count": 11
+    },
+    {
+      "path": "src/benchmarks/dependency_cases.json",
+      "domain": "dependency",
+      "case_count": 6
+    },
+    {
+      "path": "src/benchmarks/income_cases.json",
+      "domain": "income",
+      "case_count": 8
+    }
+  ],
+  "usage": "Load facts into rule engine, run rules, compare outputs to expected"
+}

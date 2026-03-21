@@ -1,0 +1,108 @@
+{
+  "description": "Benchmark cases for income classification rules",
+  "rules_files": [
+    "src/rules/income/wage_income.yaml",
+    "src/rules/income/interest_dividend_income.yaml",
+    "src/rules/income/capital_gains.yaml",
+    "src/rules/income/self_employment_income.yaml",
+    "src/rules/agi/agi_derived.yaml"
+  ],
+  "cases": [
+    {
+      "case_id": "WAGE_01",
+      "description": "W-2 income present - wage income taxable",
+      "facts": {
+        "has_w2_income": true
+      },
+      "expected": {
+        "wage_income_taxable": true,
+        "wage_income_requires_documentation": true
+      }
+    },
+    {
+      "case_id": "WAGE_02",
+      "description": "No W-2 - no wage income",
+      "facts": {
+        "has_w2_income": false
+      },
+      "expected": {
+        "wage_income_taxable": false
+      }
+    },
+    {
+      "case_id": "INT_DIV_01",
+      "description": "1099-INT with taxable interest",
+      "facts": {
+        "has_1099_int": true,
+        "tax_exempt_interest_only": false
+      },
+      "expected": {
+        "interest_income_taxable": true,
+        "interest_dividend_requires_documentation": true
+      }
+    },
+    {
+      "case_id": "INT_DIV_02",
+      "description": "1099-DIV - dividend income",
+      "facts": {
+        "has_1099_div": true
+      },
+      "expected": {
+        "dividend_income_taxable": true
+      }
+    },
+    {
+      "case_id": "CAP_GAINS_01",
+      "description": "1099-B present - has capital gains",
+      "facts": {
+        "has_1099_b": true
+      },
+      "expected": {
+        "has_capital_gains_or_losses": true,
+        "capital_gains_requires_documentation": true
+      }
+    },
+    {
+      "case_id": "SE_01",
+      "description": "1099-NEC - self-employment income",
+      "facts": {
+        "has_1099_nec": true,
+        "has_schedule_c_income": false
+      },
+      "expected": {
+        "has_self_employment_income": true,
+        "self_employment_income_taxable": true
+      }
+    },
+    {
+      "case_id": "AGI_01",
+      "description": "Multiple income sources - AGI computable",
+      "facts": {
+        "wage_income_taxable": true,
+        "interest_income_taxable": false,
+        "dividend_income_taxable": false,
+        "has_capital_gains_or_losses": false,
+        "has_self_employment_income": false
+      },
+      "expected": {
+        "has_income": true,
+        "agi_computable": true
+      }
+    },
+    {
+      "case_id": "AGI_02",
+      "description": "No income - AGI not computable",
+      "facts": {
+        "wage_income_taxable": false,
+        "interest_income_taxable": false,
+        "dividend_income_taxable": false,
+        "has_capital_gains_or_losses": false,
+        "has_self_employment_income": false
+      },
+      "expected": {
+        "has_income": false,
+        "agi_computable": false
+      }
+    }
+  ]
+}

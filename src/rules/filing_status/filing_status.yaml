@@ -1,0 +1,90 @@
+# Pub 501: https://www.irs.gov/pubs/p501
+# Single Filing Status
+- rule_id: single_filing_status
+  rule_type: decision
+  target: valid_filing_statuses
+  conditions:
+    - node: marital_status_on_1231
+      operator: eq
+      value: [single, legally_separated, widowed]
+    - node: eligible_for_qss
+      operator: eq
+      value: false
+    - node: eligible_for_hoh
+      operator: eq
+      value: false
+  actions:
+    type: append
+    value: single
+  citations:
+    - IRS_FILING_STATUS_PAGE: https://www.irs.gov/filing/filing-status
+    - IRS_PUB_501_SINGLE: https://www.irs.gov/pubs/p501
+
+# Married Filing Jointly Filing Status
+- rule_id: married_filing_jointly_filing_status
+  rule_type: decision
+  target: valid_filing_statuses
+  conditions:
+    - node: marital_status_on_1231
+      operator: eq
+      value: married
+    - node: spouse_willing_to_file_jointly
+      operator: eq
+      value: true
+  actions:
+    type: append
+    value: married_filing_jointly
+  citations:
+    - IRS_FILING_STATUS_PAGE: https://www.irs.gov/filing/filing-status
+    - IRS_PUB_501_MARRIED: https://www.irs.gov/pubs/p501
+
+# Married Filing Separately Filing Status
+- rule_id: married_filing_separately_filing_status
+  rule_type: decision
+  target: valid_filing_statuses
+  conditions:
+    - node: marital_status_on_1231
+      operator: eq
+      value: married
+  actions:
+    type: append
+    value: married_filing_separately
+  citations:
+    - IRS_FILING_STATUS_PAGE: https://www.irs.gov/filing/filing-status
+    - IRS_PUB_501_MARRIED: https://www.irs.gov/pubs/p501
+
+# Head of Household Filing Status
+- rule_id: head_of_household_filing_status
+  rule_type: decision
+  target: valid_filing_statuses
+  conditions:
+    - node: marital_status_on_1231
+      operator: eq
+      value: head_of_household
+    - node: has_qualifying_person
+      operator: eq
+      value: true
+    - node: considered_unmarried
+      operator: eq
+      value: true
+  actions:
+    type: append
+    value: head_of_household
+  citations:
+    - IRS_FILING_STATUS_PAGE: https://www.irs.gov/filing/filing-status
+    - IRS_PUB_501_HOH: https://www.irs.gov/pubs/p501
+
+# Qualifying Surviving Spouse Filing Status (QSS) 
+- rule_id: qualifying_surviving_spouse_filing_status
+  rule_type: decision
+  target: valid_filing_statuses
+  conditions:
+    - node: marital_status_on_1231
+      operator: eq
+      value: qualifying_surviving_spouse
+  actions:
+    type: append
+    value: qualifying_surviving_spouse
+  citations:
+    - IRS_FILING_STATUS_PAGE: https://www.irs.gov/filing/filing-status
+    - IRS_PUB_501_QSS: https://www.irs.gov/pubs/p501

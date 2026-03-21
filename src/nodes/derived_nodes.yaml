@@ -1,0 +1,256 @@
+# Derived nodes - computed from other nodes via rules
+# Evaluation order matters; see rules/index.yaml for load order
+
+# --- Qualifying person / dependency ---
+person_is_relative_who_does_not_have_to_live_with_taxpayer:
+  description: Person is in relationship category that does not require co-residency
+  type: boolean
+  depends_on: [relationship_category]
+  rules_file: src/rules/dependency/qualifying_person.yaml
+
+qualifying_person_hoh_status:
+  description: Whether a person qualifies for HOH qualifying person test (per person)
+  type: boolean
+  scope: per_qualifying_person
+  depends_on:
+    - qualifying_person_lived_with_taxpayer_more_than_half_of_year
+    - child_marital_status_on_1231
+    - person_is_dependent
+    - child_is_dependent
+    - person_is_relative_who_does_not_have_to_live_with_taxpayer
+  rules_file: src/rules/dependency/qualifying_person.yaml
+
+has_qualifying_person:
+  description: Taxpayer has at least one qualifying person for HOH
+  type: boolean
+  depends_on: [qualifying_person_hoh_status]
+  aggregation: any_true
+  note: Aggregates qualifying_person_hoh_status across all persons
+
+# --- Qualifying child (per-child test components) ---
+child_meets_relationship_test:
+  description: Child meets qualifying child relationship test
+  type: boolean
+  scope: per_child
+  depends_on: [child_relationship]
+  rules_file: src/rules/dependency/qualifying_child.yaml
+
+child_meets_age_test:
+  description: Child meets qualifying child age test
+  type: boolean
+  scope: per_child
+  depends_on:
+    - child_age_on_1231
+    - child_full_time_student
+    - child_permanently_disabled
+  rules_file: src/rules/dependency/qualifying_child.yaml
+
+child_meets_residency_test:
+  description: Child meets qualifying child residency test
+  type: boolean
+  scope: per_child
+  depends_on: [child_lived_with_taxpayer_more_than_half_of_year]
+  rules_file: src/rules/dependency/qualifying_child.yaml
+
+child_meets_support_test:
+  description: Child meets qualifying child support test
+  type: boolean
+  scope: per_child
+  depends_on: [child_provided_own_support]
+  rules_file: src/rules/dependency/qualifying_child.yaml
+
+child_meets_joint_return_test:
+  description: Child meets qualifying child joint return test
+  type: boolean
+  scope: per_child
+  depends_on: [child_filed_joint_return]
+  rules_file: src/rules/dependency/qualifying_child.yaml
+
+child_meets_citizenship_test:
+  description: Child meets qualifying child citizenship test
+  type: boolean
+  scope: per_child
+  depends_on: [child_is_us_citizen_resident]
+  rules_file: src/rules/dependency/qualifying_child.yaml
+
+child_is_qualifying_child:
+  description: Child qualifies as qualifying child for credits/dependency
+  type: boolean
+  scope: per_child
+  depends_on:
+    - child_meets_relationship_test
+    - child_meets_age_test
+    - child_meets_residency_test
+    - child_meets_support_test
+    - child_meets_joint_return_test
+    - child_meets_citizenship_test
+  rules_file: src/rules/dependency/qualifying_child.yaml
+
+# --- Eligibility shortcuts (user-requested) ---
+is_qualifying_relative:
+  description: Person qualifies as qualifying relative (for ODC, dependency)
+  type: boolean
+  scope: per_person
+  depends_on: [person_is_dependent, relationship_category]
+  note: Placeholder; expand with qualifying relative rules if needed
+
+hoh_eligible:
+  description: Taxpayer is eligible for Head of Household filing status
+  type: boolean
+  depends_on:
+    - marital_status_on_1231
+    - has_qualifying_person
+    - considered_unmarried
+  rules_file: src/rules/filing_status/filing_status.yaml
+  note: True when valid_filing_statuses contains head_of_household
+
+# --- Income ---
+wage_income_taxable:
+  description: Taxpayer has taxable wage income
+  type: boolean
+  depends_on: [has_w2_income]
+  rules_file: src/rules/income/wage_income.yaml
+
+interest_income_taxable:
+  description: Taxpayer has taxable interest income
+  type: boolean
+  depends_on: [has_1099_int, tax_exempt_interest_only]
+  rules_file: src/rules/income/interest_dividend_income.yaml
+
+dividend_income_taxable:
+  description: Taxpayer has taxable dividend income
+  type: boolean
+  depends_on: [has_1099_div]
+  rules_file: src/rules/income/interest_dividend_income.yaml
+
+qualified_dividends_eligible_for_preferential_rate:
+  description: Qualified dividends eligible for preferential tax rate
+  type: boolean
+  depends_on: [qualified_dividends_reported]
+  rules_file: src/rules/income/interest_dividend_income.yaml
+
+has_capital_gains_or_losses:
+  description: Taxpayer has capital gains or losses
+  type: boolean
+  depends_on: [has_1099_b]
+  rules_file: src/rules/income/capital_gains.yaml
+
+has_self_employment_income:
+  description: Taxpayer has self-employment income
+  type: boolean
+  depends_on: [has_1099_nec, has_schedule_c_income]
+  rules_file: src/rules/income/self_employment_income.yaml
+
+self_employment_income_taxable:
+  description: Taxpayer has taxable self-employment income
+  type: boolean
+  depends_on: [has_self_employment_income]
+  rules_file: src/rules/income/self_employment_income.yaml
+
+# --- AGI ---
+has_income:
+  description: Taxpayer has any reportable income
+  type: boolean
+  depends_on:
+    - wage_income_taxable
+    - interest_income_taxable
+    - dividend_income_taxable
+    - has_capital_gains_or_losses
+    - has_self_employment_income
+  rules_file: src/rules/agi/agi_derived.yaml
+
+agi_computable:
+  description: AGI can be computed (income present)
+  type: boolean
+  depends_on: [has_income]
+  rules_file: src/rules/agi/agi_derived.yaml
+
+# --- Deductions ---
+has_charitable_deduction:
+  description: Taxpayer has charitable contribution deduction
+  type: boolean
+  depends_on: [charitable_cash_contributions, charitable_noncash_contributions]
+  rules_file: src/rules/deductions/charitable_contributions.yaml
+
+charitable_deduction_allowable:
+  description: Charitable deduction is allowable (documented)
+  type: boolean
+  depends_on: [has_charitable_deduction, charitable_contributions_documented]
+  rules_file: src/rules/deductions/charitable_contributions.yaml
+
+medical_expenses_exceed_threshold:
+  description: Medical expenses exceed 7.5% AGI threshold
+  type: boolean
+  depends_on: [medical_expenses_paid, agi_computable]
+  rules_file: src/rules/deductions/medical_expenses.yaml
+
+medical_deduction_allowable:
+  description: Medical deduction is allowable (documented)
+  type: boolean
+  depends_on: [medical_expenses_exceed_threshold, medical_expenses_documented]
+  rules_file: src/rules/deductions/medical_expenses.yaml
+
+has_salt_deduction:
+  description: Taxpayer has SALT deduction
+  type: boolean
+  depends_on:
+    - state_local_income_tax_paid
+    - state_local_sales_tax_paid
+    - real_estate_taxes_paid
+  rules_file: src/rules/deductions/salt.yaml
+
+salt_deduction_allowable:
+  description: SALT deduction is allowable (documented)
+  type: boolean
+  depends_on: [has_salt_deduction, salt_documented]
+  rules_file: src/rules/deductions/salt.yaml
+
+has_mortgage_interest_deduction:
+  description: Taxpayer has mortgage interest deduction
+  type: boolean
+  depends_on: [mortgage_interest_paid]
+  rules_file: src/rules/deductions/mortgage_interest.yaml
+
+mortgage_interest_allowable:
+  description: Mortgage interest deduction is allowable (documented)
+  type: boolean
+  depends_on: [has_mortgage_interest_deduction, mortgage_interest_documented]
+  rules_file: src/rules/deductions/mortgage_interest.yaml
+
+should_itemize:
+  description: Taxpayer should itemize deductions
+  type: boolean
+  depends_on: [itemized_deductions_total, itemized_deductions_exceed_standard]
+  rules_file: src/rules/deductions/itemized_deductions.yaml
+
+did_not_itemize:
+  description: Taxpayer did not itemize (uses standard deduction)
+  type: boolean
+  depends_on: [should_itemize]
+  rules_file: src/rules/deductions/itemized_deductions.yaml
+
+# --- Taxable income ---
+deduction_determined:
+  description: Deduction method determined (standard or itemized)
+  type: boolean
+  depends_on: [may_claim_standard_deduction, should_itemize]
+  rules_file: src/rules/taxable_income/taxable_income_derived.yaml
+
+taxable_income_computable:
+  description: Taxable income can be computed
+  type: boolean
+  depends_on: [agi_computable, deduction_determined]
+  rules_file: src/rules/taxable_income/taxable_income_derived.yaml
+
+# --- Payments ---
+total_withholding_reported:
+  description: Total withholding has been reported
+  type: boolean
+  depends_on: [federal_withholding_w2]
+  rules_file: src/rules/payments/withholding.yaml
+
+has_estimated_payments:
+  description: Taxpayer made estimated tax payments
+  type: boolean
+  depends_on: [estimated_tax_payments_made]
+  rules_file: src/rules/payments/estimated_payments.yaml

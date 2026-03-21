@@ -1,0 +1,46 @@
+# Earned Income Credit: https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit
+# May claim EIC
+- rule_id: may_claim_earned_income_credit
+  rule_type: decision
+  target: may_claim_earned_income_credit
+  conditions:
+    - node: earned_income_amount
+      operator: gt
+      value: 0
+    - node: investment_income_under_eic_limit
+      operator: eq
+      value: true
+    - node: earned_income_credit_filing_status_eligible
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_EIC: https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit
+
+- rule_id: may_not_claim_earned_income_credit_no_earned_income
+  rule_type: decision
+  target: may_claim_earned_income_credit
+  conditions:
+    - node: earned_income_amount
+      operator: eq
+      value: 0
+  actions:
+    type: set
+    value: false
+  citations:
+    - IRS_EIC: https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit
+
+- rule_id: may_not_claim_earned_income_credit_investment_income_over_limit
+  rule_type: decision
+  target: may_claim_earned_income_credit
+  conditions:
+    - node: investment_income_under_eic_limit
+      operator: eq
+      value: false
+  actions:
+    type: set
+    value: false
+  citations:
+    - IRS_EIC: https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit

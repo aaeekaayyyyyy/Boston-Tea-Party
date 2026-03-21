@@ -1,0 +1,44 @@
+# Form 1040: https://www.irs.gov/forms-pubs/about-form-1040
+# Deduction determined (standard or itemized)
+- rule_id: deduction_determined_standard
+  rule_type: decision
+  target: deduction_determined
+  conditions:
+    - node: may_claim_standard_deduction
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_1040: https://www.irs.gov/forms-pubs/about-form-1040
+
+- rule_id: deduction_determined_itemized
+  rule_type: decision
+  target: deduction_determined
+  conditions:
+    - node: should_itemize
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_1040: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+
+# Taxable income computable
+- rule_id: taxable_income_computable
+  rule_type: decision
+  target: taxable_income_computable
+  conditions:
+    - node: agi_computable
+      operator: eq
+      value: true
+    - node: deduction_determined
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_1040: https://www.irs.gov/forms-pubs/about-form-1040

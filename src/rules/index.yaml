@@ -1,0 +1,46 @@
+# Rules index - file locations and recommended evaluation order
+# Rules reference nodes by name; this index documents paths for loaders.
+# Evaluate in order to satisfy dependencies.
+
+load_order:
+  # 1. Dependency and qualifying person (feeds filing status)
+  - dependency/qualifying_person.yaml
+  - dependency/qualifying_child.yaml
+
+  # 2. Filing status (depends on qualifying_person -> has_qualifying_person)
+  - filing_status/filing_status.yaml
+
+  # 3. Income
+  - income/wage_income.yaml
+  - income/interest_dividend_income.yaml
+  - income/capital_gains.yaml
+  - income/self_employment_income.yaml
+
+  # 4. AGI (depends on income)
+  - agi/agi_derived.yaml
+
+  # 5. Deductions
+  - deductions/charitable_contributions.yaml
+  - deductions/medical_expenses.yaml
+  - deductions/salt.yaml
+  - deductions/mortgage_interest.yaml
+  - deductions/itemized_deductions.yaml
+  - deductions/standard_deduction.yaml
+
+  # 6. Taxable income (depends on AGI, deductions)
+  - taxable_income/taxable_income_derived.yaml
+
+  # 7. Credits (depend on filing status, income, qualifying persons)
+  - taxes_and_credits/child_tax_credit.yaml
+  - taxes_and_credits/other_dependent_credit.yaml
+  - taxes_and_credits/earned_income_credit.yaml
+  - taxes_and_credits/education_credits.yaml
+
+  # 8. Payments
+  - payments/withholding.yaml
+  - payments/estimated_payments.yaml
+
+  # 9. Documentation (depends on all above)
+  - documentation/income_documents.yaml
+  - documentation/deduction_documents.yaml
+  - documentation/credit_documents.yaml

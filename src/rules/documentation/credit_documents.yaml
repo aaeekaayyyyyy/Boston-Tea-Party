@@ -1,0 +1,23 @@
+# Documentation requirements for credits
+# Credit documentation requirements
+- rule_id: credit_documentation_requirements
+  rule_type: documentation
+  target: credit_documentation_requirements
+  conditions_any:
+    - node: may_claim_child_tax_credit
+      operator: eq
+      value: true
+    - node: may_claim_other_dependent_credit
+      operator: eq
+      value: true
+    - node: may_claim_earned_income_credit
+      operator: eq
+      value: true
+    - node: may_claim_education_credit
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: [dependent_ssn, education_1098_T, EIC_worksheet_supporting_docs]
+  citations:
+    - IRS_1040: https://www.irs.gov/forms-pubs/about-form-1040

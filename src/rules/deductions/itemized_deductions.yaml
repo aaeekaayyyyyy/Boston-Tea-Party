@@ -1,0 +1,71 @@
+# Schedule A: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+# Should itemize when itemized exceeds standard
+- rule_id: should_itemize
+  rule_type: decision
+  target: should_itemize
+  conditions:
+    - node: itemized_deductions_total
+      operator: gt
+      value: 0
+    - node: itemized_deductions_exceed_standard
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_SCHEDULE_A: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+
+- rule_id: should_not_itemize
+  rule_type: decision
+  target: should_itemize
+  conditions:
+    - node: itemized_deductions_exceed_standard
+      operator: eq
+      value: false
+  actions:
+    type: set
+    value: false
+  citations:
+    - IRS_SCHEDULE_A: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+
+# Did not itemize (for standard deduction rules)
+- rule_id: did_not_itemize
+  rule_type: decision
+  target: did_not_itemize
+  conditions:
+    - node: should_itemize
+      operator: eq
+      value: false
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_SCHEDULE_A: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+
+# Recommended deduction method
+- rule_id: recommended_deduction_method_itemized
+  rule_type: decision
+  target: recommended_deduction_method
+  conditions:
+    - node: should_itemize
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: itemized
+  citations:
+    - IRS_SCHEDULE_A: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+
+- rule_id: recommended_deduction_method_standard
+  rule_type: decision
+  target: recommended_deduction_method
+  conditions:
+    - node: should_itemize
+      operator: eq
+      value: false
+  actions:
+    type: set
+    value: standard
+  citations:
+    - IRS_SCHEDULE_A: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040

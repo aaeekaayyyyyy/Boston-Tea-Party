@@ -1,0 +1,43 @@
+# Child Tax Credit: https://www.irs.gov/credits-deductions/individuals/child-tax-credit
+# May claim child tax credit
+- rule_id: may_claim_child_tax_credit
+  rule_type: decision
+  target: may_claim_child_tax_credit
+  conditions:
+    - node: number_of_qualifying_children
+      operator: gt
+      value: 0
+    - node: child_tax_credit_agi_under_limit
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_CTC: https://www.irs.gov/credits-deductions/individuals/child-tax-credit
+
+- rule_id: may_not_claim_child_tax_credit_no_children
+  rule_type: decision
+  target: may_claim_child_tax_credit
+  conditions:
+    - node: number_of_qualifying_children
+      operator: eq
+      value: 0
+  actions:
+    type: set
+    value: false
+  citations:
+    - IRS_CTC: https://www.irs.gov/credits-deductions/individuals/child-tax-credit
+
+- rule_id: may_not_claim_child_tax_credit_agi_over_limit
+  rule_type: decision
+  target: may_claim_child_tax_credit
+  conditions:
+    - node: child_tax_credit_agi_under_limit
+      operator: eq
+      value: false
+  actions:
+    type: set
+    value: false
+  citations:
+    - IRS_CTC: https://www.irs.gov/credits-deductions/individuals/child-tax-credit

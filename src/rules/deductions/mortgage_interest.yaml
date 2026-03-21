@@ -1,0 +1,58 @@
+# Schedule A - Mortgage Interest: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+# Has mortgage interest deduction
+- rule_id: has_mortgage_interest_deduction
+  rule_type: decision
+  target: has_mortgage_interest_deduction
+  conditions:
+    - node: mortgage_interest_paid
+      operator: gt
+      value: 0
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_SCHEDULE_A: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+
+# Mortgage interest allowable (simplified - TCJA limits apply)
+- rule_id: mortgage_interest_allowable
+  rule_type: decision
+  target: mortgage_interest_allowable
+  conditions:
+    - node: has_mortgage_interest_deduction
+      operator: eq
+      value: true
+    - node: mortgage_interest_documented
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_SCHEDULE_A: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+
+# Documentation
+- rule_id: mortgage_interest_requires_documentation
+  rule_type: decision
+  target: mortgage_interest_requires_documentation
+  conditions:
+    - node: has_mortgage_interest_deduction
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_SCHEDULE_A: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+
+- rule_id: mortgage_document_types
+  rule_type: documentation
+  target: mortgage_document_types
+  conditions:
+    - node: has_mortgage_interest_deduction
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: [1098]
+  citations:
+    - IRS_SCHEDULE_A: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040

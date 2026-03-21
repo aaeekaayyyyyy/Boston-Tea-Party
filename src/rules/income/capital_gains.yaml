@@ -1,0 +1,55 @@
+# Form 1099-B: https://www.irs.gov/forms-pubs/about-form-1099-b
+# Schedule D: https://www.irs.gov/forms-pubs/about-schedule-d-form-1040
+# Has capital gains or losses
+- rule_id: has_capital_gains_or_losses
+  rule_type: decision
+  target: has_capital_gains_or_losses
+  conditions:
+    - node: has_1099_b
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_1099_B: https://www.irs.gov/forms-pubs/about-form-1099-b
+
+- rule_id: no_capital_gains_or_losses
+  rule_type: decision
+  target: has_capital_gains_or_losses
+  conditions:
+    - node: has_1099_b
+      operator: eq
+      value: false
+  actions:
+    type: set
+    value: false
+  citations:
+    - IRS_1099_B: https://www.irs.gov/forms-pubs/about-form-1099-b
+
+# Documentation
+- rule_id: capital_gains_requires_documentation
+  rule_type: decision
+  target: capital_gains_requires_documentation
+  conditions:
+    - node: has_capital_gains_or_losses
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_1099_B: https://www.irs.gov/forms-pubs/about-form-1099-b
+
+- rule_id: capital_gains_document_types
+  rule_type: documentation
+  target: capital_gains_document_types
+  conditions:
+    - node: has_capital_gains_or_losses
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: [1099_B, Schedule_D]
+  citations:
+    - IRS_1099_B: https://www.irs.gov/forms-pubs/about-form-1099-b

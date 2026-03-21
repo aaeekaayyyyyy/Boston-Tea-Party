@@ -1,0 +1,349 @@
+# Taxpayer facts - raw input nodes from user, documents, or external systems
+# These nodes are populated before rule evaluation (not computed by rules)
+
+# --- Filing status & marital ---
+marital_status_on_1231:
+  description: Marital status as of December 31 of tax year
+  type: string
+  enum:
+    - single
+    - married
+    - widowed
+    - divorced
+    - separated
+    - domestic_partner
+    - legally_separated
+    - head_of_household
+    - qualifying_surviving_spouse
+  source: user_input
+  schema_ref: data/users/schema.json
+
+spouse_willing_to_file_jointly:
+  description: Spouse agrees to file jointly
+  type: boolean
+  nullable: true
+  source: user_input
+  schema_ref: data/users/schema.json
+
+eligible_for_qss:
+  description: Eligible for Qualifying Surviving Spouse status
+  type: boolean
+  source: derived_or_user
+
+eligible_for_hoh:
+  description: Eligible for Head of Household status
+  type: boolean
+  source: derived_or_user
+
+considered_unmarried:
+  description: Considered unmarried for HOH purposes (e.g., MFS spouse, abandoned)
+  type: boolean
+  source: user_input
+
+# --- Qualifying person / dependency (per-person scope) ---
+qualifying_person_lived_with_taxpayer_more_than_half_of_year:
+  description: Qualifying person lived with taxpayer more than half the year
+  type: boolean
+  nullable: true
+  scope: per_qualifying_person
+  source: user_input
+  schema_ref: data/users/schema.json
+
+relationship_category:
+  description: Relationship of person to taxpayer (for qualifying person test)
+  type: string
+  enum:
+    - child
+    - stepchild
+    - foster_child
+    - grandchild
+    - brother
+    - sister
+    - half_brother
+    - half_sister
+    - stepbrother
+    - stepsister
+    - father
+    - mother
+    - grandparent
+    - direct_ancestor_other
+    - stepfather
+    - stepmother
+    - niece
+    - nephew
+    - aunt
+    - uncle
+    - son_in_law
+    - daughter_in_law
+    - father_in_law
+    - mother_in_law
+    - brother_in_law
+    - sister_in_law
+  scope: per_qualifying_person
+  source: user_input
+
+person_is_dependent:
+  description: Person qualifies as taxpayer's dependent
+  type: boolean
+  scope: per_person
+  source: user_input
+
+child_is_dependent:
+  description: Child qualifies as taxpayer's dependent
+  type: boolean
+  scope: per_child
+  source: user_input
+
+child_marital_status_on_1231:
+  description: Child's marital status as of December 31
+  type: string
+  enum: [single, married]
+  scope: per_child
+  source: user_input
+
+# --- Qualifying child (per-child scope) ---
+child_relationship:
+  description: Child's relationship to taxpayer
+  type: string
+  enum:
+    - son
+    - daughter
+    - stepchild
+    - foster_child
+    - brother
+    - sister
+    - half_brother
+    - half_sister
+    - stepbrother
+    - stepsister
+    - descendant_of_any_above
+  scope: per_child
+  source: user_input
+
+child_age_on_1231:
+  description: Child's age as of December 31
+  type: integer
+  scope: per_child
+  source: user_input
+
+child_full_time_student:
+  description: Child was full-time student for 5+ months
+  type: boolean
+  scope: per_child
+  source: user_input
+
+child_permanently_disabled:
+  description: Child is permanently and totally disabled
+  type: boolean
+  scope: per_child
+  source: user_input
+
+child_lived_with_taxpayer_more_than_half_of_year:
+  description: Child lived with taxpayer more than half the year
+  type: boolean
+  scope: per_child
+  source: user_input
+
+child_provided_own_support:
+  description: Child provided more than half of own support
+  type: boolean
+  scope: per_child
+  source: user_input
+
+child_filed_joint_return:
+  description: Child filed joint return (other than for refund)
+  type: boolean
+  scope: per_child
+  source: user_input
+
+child_is_us_citizen_resident:
+  description: Child is U.S. citizen, national, or resident alien
+  type: boolean
+  scope: per_child
+  source: user_input
+
+# --- Income documents & amounts ---
+has_w2_income:
+  description: Taxpayer received W-2(s)
+  type: boolean
+  source: document
+
+has_1099_int:
+  description: Taxpayer received 1099-INT
+  type: boolean
+  source: document
+
+has_1099_div:
+  description: Taxpayer received 1099-DIV
+  type: boolean
+  source: document
+
+has_1099_b:
+  description: Taxpayer received 1099-B
+  type: boolean
+  source: document
+
+has_1099_nec:
+  description: Taxpayer received 1099-NEC
+  type: boolean
+  source: document
+
+has_schedule_c_income:
+  description: Taxpayer has Schedule C business income
+  type: boolean
+  source: document
+
+tax_exempt_interest_only:
+  description: Only tax-exempt interest reported (no taxable interest)
+  type: boolean
+  source: document
+
+qualified_dividends_reported:
+  description: Amount of qualified dividends reported
+  type: number
+  source: document
+
+# --- Deduction amounts ---
+charitable_cash_contributions:
+  description: Cash charitable contributions amount
+  type: number
+  source: user_input
+
+charitable_noncash_contributions:
+  description: Non-cash charitable contributions amount
+  type: number
+  source: user_input
+
+charitable_contributions_documented:
+  description: Charitable contributions have required documentation
+  type: boolean
+  source: user_input
+
+medical_expenses_paid:
+  description: Medical expenses paid during year
+  type: number
+  source: user_input
+
+medical_expenses_documented:
+  description: Medical expenses have required documentation
+  type: boolean
+  source: user_input
+
+state_local_income_tax_paid:
+  description: State and local income taxes paid
+  type: number
+  source: user_input
+
+state_local_sales_tax_paid:
+  description: State and local sales taxes paid
+  type: number
+  source: user_input
+
+real_estate_taxes_paid:
+  description: Real estate taxes paid
+  type: number
+  source: user_input
+
+salt_documented:
+  description: SALT deductions have required documentation
+  type: boolean
+  source: user_input
+
+mortgage_interest_paid:
+  description: Qualified mortgage interest paid
+  type: number
+  source: user_input
+
+mortgage_interest_documented:
+  description: Mortgage interest has required documentation (e.g., 1098)
+  type: boolean
+  source: user_input
+
+# --- Itemized deduction aggregates (may be computed or input) ---
+itemized_deductions_total:
+  description: Total itemized deductions before comparison
+  type: number
+  source: computed_or_input
+
+itemized_deductions_exceed_standard:
+  description: Itemized deductions exceed standard deduction amount
+  type: boolean
+  source: computed
+
+# --- Standard deduction eligibility ---
+taxpayer_age_65_or_older:
+  description: Taxpayer was 65 or older on 12/31
+  type: boolean
+  source: user_input
+
+taxpayer_blind:
+  description: Taxpayer is blind
+  type: boolean
+  source: user_input
+
+spouse_age_65_or_older:
+  description: Spouse was 65 or older on 12/31
+  type: boolean
+  source: user_input
+
+spouse_blind:
+  description: Spouse is blind
+  type: boolean
+  source: user_input
+
+# --- Credits ---
+number_of_qualifying_children:
+  description: Count of qualifying children for CTC
+  type: integer
+  source: computed_or_input
+
+number_of_other_dependents:
+  description: Count of other dependents (not qualifying children)
+  type: integer
+  source: computed_or_input
+
+child_tax_credit_agi_under_limit:
+  description: AGI is under CTC phaseout threshold
+  type: boolean
+  source: computed
+
+earned_income_amount:
+  description: Earned income amount for EIC
+  type: number
+  source: computed_or_input
+
+investment_income_under_eic_limit:
+  description: Investment income under EIC limit
+  type: boolean
+  source: computed
+
+earned_income_credit_filing_status_eligible:
+  description: Filing status is eligible for EIC
+  type: boolean
+  source: computed
+
+qualified_education_expenses_paid:
+  description: Qualified education expenses paid
+  type: number
+  source: user_input
+
+education_expenses_documented:
+  description: Education expenses have required documentation
+  type: boolean
+  source: user_input
+
+modified_agi_under_education_limit:
+  description: Modified AGI under education credit phaseout
+  type: boolean
+  source: computed
+
+# --- Payments ---
+federal_withholding_w2:
+  description: Federal tax withheld from W-2(s)
+  type: number
+  source: document
+
+estimated_tax_payments_made:
+  description: Estimated tax payments made during year
+  type: number
+  source: user_input

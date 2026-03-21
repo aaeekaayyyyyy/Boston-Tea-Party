@@ -1,0 +1,41 @@
+# Federal withholding: W-2, 1099, etc.
+# Total withholding reported
+- rule_id: total_withholding_reported
+  rule_type: decision
+  target: total_withholding_reported
+  conditions:
+    - node: federal_withholding_w2
+      operator: gte
+      value: 0
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_W2: https://www.irs.gov/forms-pubs/about-form-w-2
+
+# Documentation
+- rule_id: withholding_requires_documentation
+  rule_type: decision
+  target: withholding_requires_documentation
+  conditions:
+    - node: wage_income_taxable
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_W2: https://www.irs.gov/forms-pubs/about-form-w-2
+
+- rule_id: withholding_document_types
+  rule_type: documentation
+  target: withholding_document_types
+  conditions:
+    - node: wage_income_taxable
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: [W2]
+  citations:
+    - IRS_W2: https://www.irs.gov/forms-pubs/about-form-w-2

@@ -1,0 +1,81 @@
+# Form 1099-INT: https://www.irs.gov/forms-pubs/about-form-1099-int
+# Form 1099-DIV: https://www.irs.gov/forms-pubs/about-form-1099-div
+# Taxable interest
+- rule_id: interest_income_taxable_has_1099_int
+  rule_type: decision
+  target: interest_income_taxable
+  conditions:
+    - node: has_1099_int
+      operator: eq
+      value: true
+    - node: tax_exempt_interest_only
+      operator: eq
+      value: false
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_1099_INT: https://www.irs.gov/forms-pubs/about-form-1099-int
+
+# Taxable dividends
+- rule_id: dividend_income_taxable_has_1099_div
+  rule_type: decision
+  target: dividend_income_taxable
+  conditions:
+    - node: has_1099_div
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_1099_DIV: https://www.irs.gov/forms-pubs/about-form-1099-div
+
+# Qualified dividends eligible for preferential rate
+- rule_id: qualified_dividends_eligible
+  rule_type: decision
+  target: qualified_dividends_eligible_for_preferential_rate
+  conditions:
+    - node: qualified_dividends_reported
+      operator: gt
+      value: 0
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_1099_DIV: https://www.irs.gov/forms-pubs/about-form-1099-div
+
+# Documentation
+- rule_id: interest_dividend_requires_documentation
+  rule_type: decision
+  target: interest_dividend_requires_documentation
+  conditions_any:
+    - node: interest_income_taxable
+      operator: eq
+      value: true
+    - node: dividend_income_taxable
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_1099_INT: https://www.irs.gov/forms-pubs/about-form-1099-int
+    - IRS_1099_DIV: https://www.irs.gov/forms-pubs/about-form-1099-div
+
+- rule_id: interest_dividend_document_types
+  rule_type: documentation
+  target: interest_dividend_document_types
+  conditions_any:
+    - node: interest_income_taxable
+      operator: eq
+      value: true
+    - node: dividend_income_taxable
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: [1099_INT, 1099_DIV]
+  citations:
+    - IRS_1099_INT: https://www.irs.gov/forms-pubs/about-form-1099-int
+    - IRS_1099_DIV: https://www.irs.gov/forms-pubs/about-form-1099-div

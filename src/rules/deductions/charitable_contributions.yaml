@@ -1,0 +1,61 @@
+# Schedule A - Charitable Contributions: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+# Has charitable deduction
+- rule_id: has_charitable_deduction
+  rule_type: decision
+  target: has_charitable_deduction
+  conditions_any:
+    - node: charitable_cash_contributions
+      operator: gt
+      value: 0
+    - node: charitable_noncash_contributions
+      operator: gt
+      value: 0
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_SCHEDULE_A: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+
+# Charitable deduction allowable when documented
+- rule_id: charitable_deduction_allowable
+  rule_type: decision
+  target: charitable_deduction_allowable
+  conditions:
+    - node: has_charitable_deduction
+      operator: eq
+      value: true
+    - node: charitable_contributions_documented
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_SCHEDULE_A: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+
+# Documentation
+- rule_id: charitable_contribution_requires_documentation
+  rule_type: decision
+  target: charitable_contribution_requires_documentation
+  conditions:
+    - node: has_charitable_deduction
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_SCHEDULE_A: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+
+- rule_id: charitable_document_types
+  rule_type: documentation
+  target: charitable_document_types
+  conditions:
+    - node: has_charitable_deduction
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: [written_acknowledgment, bank_records, appraisal_if_over_500]
+  citations:
+    - IRS_SCHEDULE_A: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040

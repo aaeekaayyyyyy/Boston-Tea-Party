@@ -1,0 +1,72 @@
+# Nodes index - registry of all graph nodes for the tax rule engine
+# Use for validation, graph construction, and dependency resolution
+
+# File layout:
+#   taxpayer_facts.yaml   - Raw input nodes (user, documents)
+#   derived_nodes.yaml    - Computed from other nodes via rules
+#   decision_nodes.yaml   - Primary outputs and recommendations
+#   documentation_nodes.yaml - Document requirements and types
+
+# Node categories
+categories:
+  facts:
+    file: taxpayer_facts.yaml
+    description: Input nodes populated before rule evaluation
+    count: 50
+
+  derived:
+    file: derived_nodes.yaml
+    description: Nodes computed by rules from other nodes
+    count: 35
+
+  decision:
+    file: decision_nodes.yaml
+    description: Primary eligibility and recommendation outputs
+    count: 10
+
+  documentation:
+    file: documentation_nodes.yaml
+    description: Document requirements for verification and RAG
+    count: 22
+
+# Scoped nodes (evaluated per person/child)
+scoped_nodes:
+  per_qualifying_person:
+    - qualifying_person_lived_with_taxpayer_more_than_half_of_year
+    - relationship_category
+    - person_is_dependent
+    - qualifying_person_hoh_status
+
+  per_child:
+    - child_relationship
+    - child_age_on_1231
+    - child_full_time_student
+    - child_permanently_disabled
+    - child_lived_with_taxpayer_more_than_half_of_year
+    - child_provided_own_support
+    - child_filed_joint_return
+    - child_is_us_citizen_resident
+    - child_marital_status_on_1231
+    - child_is_dependent
+    - child_meets_relationship_test
+    - child_meets_age_test
+    - child_meets_residency_test
+    - child_meets_support_test
+    - child_meets_joint_return_test
+    - child_meets_citizenship_test
+    - child_is_qualifying_child
+
+# Key decision nodes for downstream consumers
+key_outputs:
+  - valid_filing_statuses
+  - recommended_deduction_method
+  - may_claim_standard_deduction
+  - should_itemize
+  - may_claim_child_tax_credit
+  - may_claim_other_dependent_credit
+  - may_claim_earned_income_credit
+  - may_claim_education_credit
+  - taxable_income_computable
+  - income_documentation_requirements
+  - deduction_documentation_requirements
+  - credit_documentation_requirements

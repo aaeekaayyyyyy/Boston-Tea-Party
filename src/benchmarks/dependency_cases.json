@@ -1,0 +1,99 @@
+{
+  "description": "Benchmark cases for dependency and qualifying person rules",
+  "rules_files": [
+    "src/rules/dependency/qualifying_person.yaml",
+    "src/rules/dependency/qualifying_child.yaml"
+  ],
+  "cases": [
+    {
+      "case_id": "QP_CHILD_SINGLE_01",
+      "description": "Qualifying person - single child lived with taxpayer",
+      "facts": {
+        "qualifying_person_lived_with_taxpayer_more_than_half_of_year": true,
+        "child_marital_status_on_1231": "single"
+      },
+      "expected": {
+        "qualifying_person_hoh_status": true
+      }
+    },
+    {
+      "case_id": "QP_CHILD_MARRIED_DEPENDENT_01",
+      "description": "Qualifying person - married child who is dependent",
+      "facts": {
+        "qualifying_person_lived_with_taxpayer_more_than_half_of_year": true,
+        "child_marital_status_on_1231": "married",
+        "child_is_dependent": true
+      },
+      "expected": {
+        "qualifying_person_hoh_status": true
+      }
+    },
+    {
+      "case_id": "QP_CHILD_MARRIED_NOT_DEPENDENT_01",
+      "description": "Qualifying person - married child not dependent",
+      "facts": {
+        "qualifying_person_lived_with_taxpayer_more_than_half_of_year": true,
+        "child_marital_status_on_1231": "married",
+        "person_is_dependent": false
+      },
+      "expected": {
+        "qualifying_person_hoh_status": false
+      }
+    },
+    {
+      "case_id": "QC_ALL_TESTS_PASS_01",
+      "description": "Qualifying child - all tests pass",
+      "facts": {
+        "child_relationship": "son",
+        "child_age_on_1231": 10,
+        "child_lived_with_taxpayer_more_than_half_of_year": true,
+        "child_provided_own_support": false,
+        "child_filed_joint_return": false,
+        "child_is_us_citizen_resident": true
+      },
+      "expected": {
+        "child_meets_relationship_test": true,
+        "child_meets_age_test": true,
+        "child_meets_residency_test": true,
+        "child_meets_support_test": true,
+        "child_meets_joint_return_test": true,
+        "child_meets_citizenship_test": true,
+        "child_is_qualifying_child": true
+      }
+    },
+    {
+      "case_id": "QC_AGE_FAIL_01",
+      "description": "Qualifying child - age test fail (over 19, not student)",
+      "facts": {
+        "child_relationship": "son",
+        "child_age_on_1231": 22,
+        "child_full_time_student": false,
+        "child_permanently_disabled": false,
+        "child_lived_with_taxpayer_more_than_half_of_year": true,
+        "child_provided_own_support": false,
+        "child_filed_joint_return": false,
+        "child_is_us_citizen_resident": true
+      },
+      "expected": {
+        "child_meets_age_test": false,
+        "child_is_qualifying_child": false
+      }
+    },
+    {
+      "case_id": "QC_RELATIONSHIP_FAIL_01",
+      "description": "Qualifying child - relationship not in qualifying list",
+      "facts": {
+        "child_relationship": "cousin",
+        "child_age_on_1231": 10,
+        "child_lived_with_taxpayer_more_than_half_of_year": true,
+        "child_provided_own_support": false,
+        "child_filed_joint_return": false,
+        "child_is_us_citizen_resident": true
+      },
+      "expected": {
+        "child_meets_relationship_test": false,
+        "child_is_qualifying_child": false
+      }
+    }
+  ]
+}

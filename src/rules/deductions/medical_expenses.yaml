@@ -1,0 +1,62 @@
+# Schedule A - Medical Expenses: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+# Medical expenses exceed 7.5% of AGI threshold
+- rule_id: medical_expenses_exceed_threshold
+  rule_type: decision
+  target: medical_expenses_exceed_threshold
+  conditions:
+    - node: medical_expenses_paid
+      operator: gt
+      value: 0
+    - node: agi_computable
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_SCHEDULE_A: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+    - IRS_PUB_502: https://www.irs.gov/pub/irs-pdf/p502.pdf
+
+# Medical deduction allowable
+- rule_id: medical_deduction_allowable
+  rule_type: decision
+  target: medical_deduction_allowable
+  conditions:
+    - node: medical_expenses_exceed_threshold
+      operator: eq
+      value: true
+    - node: medical_expenses_documented
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_PUB_502: https://www.irs.gov/pub/irs-pdf/p502.pdf
+
+# Documentation
+- rule_id: medical_expenses_require_documentation
+  rule_type: decision
+  target: medical_expenses_require_documentation
+  conditions:
+    - node: medical_expenses_exceed_threshold
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_PUB_502: https://www.irs.gov/pub/irs-pdf/p502.pdf
+
+- rule_id: medical_document_types
+  rule_type: documentation
+  target: medical_document_types
+  conditions:
+    - node: medical_expenses_exceed_threshold
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: [medical_records, receipts, insurance_statements]
+  citations:
+    - IRS_PUB_502: https://www.irs.gov/pub/irs-pdf/p502.pdf

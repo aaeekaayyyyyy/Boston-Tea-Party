@@ -1,0 +1,88 @@
+# Pub 501: https://www.irs.gov/pubs/p501 - Standard Deduction
+# May claim standard deduction when eligible
+- rule_id: standard_deduction_eligible_single
+  rule_type: decision
+  target: may_claim_standard_deduction
+  conditions:
+    - node: valid_filing_statuses
+      operator: contains
+      value: single
+    - node: did_not_itemize
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_PUB_501: https://www.irs.gov/pubs/p501
+
+- rule_id: standard_deduction_eligible_mfj
+  rule_type: decision
+  target: may_claim_standard_deduction
+  conditions:
+    - node: valid_filing_statuses
+      operator: contains
+      value: married_filing_jointly
+    - node: did_not_itemize
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_PUB_501: https://www.irs.gov/pubs/p501
+
+- rule_id: standard_deduction_eligible_hoh
+  rule_type: decision
+  target: may_claim_standard_deduction
+  conditions:
+    - node: valid_filing_statuses
+      operator: contains
+      value: head_of_household
+    - node: did_not_itemize
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_PUB_501: https://www.irs.gov/pubs/p501
+
+- rule_id: standard_deduction_eligible_mfs
+  rule_type: decision
+  target: may_claim_standard_deduction
+  conditions:
+    - node: valid_filing_statuses
+      operator: contains
+      value: married_filing_separately
+    - node: did_not_itemize
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_PUB_501: https://www.irs.gov/pubs/p501
+
+# Additional amount for age 65 or blind
+- rule_id: standard_deduction_additional_65_or_blind
+  rule_type: decision
+  target: standard_deduction_additional_amount_eligible
+  conditions_any:
+    - node: taxpayer_age_65_or_older
+      operator: eq
+      value: true
+    - node: taxpayer_blind
+      operator: eq
+      value: true
+    - node: spouse_age_65_or_older
+      operator: eq
+      value: true
+    - node: spouse_blind
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_PUB_501: https://www.irs.gov/pubs/p501

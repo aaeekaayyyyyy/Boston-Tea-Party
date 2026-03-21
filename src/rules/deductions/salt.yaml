@@ -1,0 +1,65 @@
+# Schedule A - SALT: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+# SALT cap: $10,000 ($5,000 MFS) - 2025 amounts
+# Has SALT deduction
+- rule_id: has_salt_deduction
+  rule_type: decision
+  target: has_salt_deduction
+  conditions_any:
+    - node: state_local_income_tax_paid
+      operator: gt
+      value: 0
+    - node: state_local_sales_tax_paid
+      operator: gt
+      value: 0
+    - node: real_estate_taxes_paid
+      operator: gt
+      value: 0
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_SCHEDULE_A: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+
+# SALT deduction allowable when documented
+- rule_id: salt_deduction_allowable
+  rule_type: decision
+  target: salt_deduction_allowable
+  conditions:
+    - node: has_salt_deduction
+      operator: eq
+      value: true
+    - node: salt_documented
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_SCHEDULE_A: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+
+# Documentation
+- rule_id: salt_requires_documentation
+  rule_type: decision
+  target: salt_requires_documentation
+  conditions:
+    - node: has_salt_deduction
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_SCHEDULE_A: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+
+- rule_id: salt_document_types
+  rule_type: documentation
+  target: salt_document_types
+  conditions:
+    - node: has_salt_deduction
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: [state_tax_return, property_tax_bill, receipts]
+  citations:
+    - IRS_SCHEDULE_A: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040

@@ -1,0 +1,71 @@
+# Form 1040: https://www.irs.gov/forms-pubs/about-form-1040
+# AGI-related derived nodes
+# Has any income
+- rule_id: has_income_wages
+  rule_type: decision
+  target: has_income
+  conditions:
+    - node: wage_income_taxable
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_1040: https://www.irs.gov/forms-pubs/about-form-1040
+
+- rule_id: has_income_interest_dividend
+  rule_type: decision
+  target: has_income
+  conditions_any:
+    - node: interest_income_taxable
+      operator: eq
+      value: true
+    - node: dividend_income_taxable
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_1040: https://www.irs.gov/forms-pubs/about-form-1040
+
+- rule_id: has_income_capital_gains
+  rule_type: decision
+  target: has_income
+  conditions:
+    - node: has_capital_gains_or_losses
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_1040: https://www.irs.gov/forms-pubs/about-form-1040
+
+- rule_id: has_income_self_employment
+  rule_type: decision
+  target: has_income
+  conditions:
+    - node: has_self_employment_income
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_1040: https://www.irs.gov/forms-pubs/about-form-1040
+
+# AGI computable when income present
+- rule_id: agi_computable
+  rule_type: decision
+  target: agi_computable
+  conditions:
+    - node: has_income
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_1040: https://www.irs.gov/forms-pubs/about-form-1040

@@ -1,0 +1,161 @@
+# Documentation nodes - document requirements and completeness
+# Used for RAG retrieval, verification, and audit support
+
+# --- Income documentation ---
+wage_income_requires_documentation:
+  description: Wage income requires W-2 documentation
+  type: boolean
+  depends_on: [wage_income_taxable]
+  rules_file: src/rules/income/wage_income.yaml
+
+interest_dividend_requires_documentation:
+  description: Interest/dividend income requires 1099 documentation
+  type: boolean
+  depends_on: [interest_income_taxable, dividend_income_taxable]
+  rules_file: src/rules/income/interest_dividend_income.yaml
+
+capital_gains_requires_documentation:
+  description: Capital gains require 1099-B/Schedule D documentation
+  type: boolean
+  depends_on: [has_capital_gains_or_losses]
+  rules_file: src/rules/income/capital_gains.yaml
+
+self_employment_requires_documentation:
+  description: Self-employment income requires 1099-NEC/Schedule C documentation
+  type: boolean
+  depends_on: [has_self_employment_income]
+  rules_file: src/rules/income/self_employment_income.yaml
+
+withholding_requires_documentation:
+  description: Withholding requires W-2 documentation
+  type: boolean
+  depends_on: [wage_income_taxable]
+  rules_file: src/rules/payments/withholding.yaml
+
+estimated_payments_require_documentation:
+  description: Estimated payments require documentation
+  type: boolean
+  depends_on: [has_estimated_payments]
+  rules_file: src/rules/payments/estimated_payments.yaml
+
+# --- Deduction documentation ---
+charitable_contribution_requires_documentation:
+  description: Charitable contributions require documentation
+  type: boolean
+  depends_on: [has_charitable_deduction]
+  rules_file: src/rules/deductions/charitable_contributions.yaml
+
+medical_expenses_require_documentation:
+  description: Medical expenses require documentation
+  type: boolean
+  depends_on: [medical_expenses_exceed_threshold]
+  rules_file: src/rules/deductions/medical_expenses.yaml
+
+salt_requires_documentation:
+  description: SALT deduction requires documentation
+  type: boolean
+  depends_on: [has_salt_deduction]
+  rules_file: src/rules/deductions/salt.yaml
+
+mortgage_interest_requires_documentation:
+  description: Mortgage interest requires 1098 documentation
+  type: boolean
+  depends_on: [has_mortgage_interest_deduction]
+  rules_file: src/rules/deductions/mortgage_interest.yaml
+
+# --- Document type lists (for retrieval) ---
+wage_income_document_types:
+  description: Document types required for wage income
+  type: list
+  item_type: string
+  depends_on: [wage_income_taxable]
+  rules_file: src/rules/income/wage_income.yaml
+
+interest_dividend_document_types:
+  description: Document types required for interest/dividend income
+  type: list
+  item_type: string
+  depends_on: [interest_income_taxable, dividend_income_taxable]
+  rules_file: src/rules/income/interest_dividend_income.yaml
+
+capital_gains_document_types:
+  description: Document types required for capital gains
+  type: list
+  item_type: string
+  depends_on: [has_capital_gains_or_losses]
+  rules_file: src/rules/income/capital_gains.yaml
+
+self_employment_document_types:
+  description: Document types required for self-employment income
+  type: list
+  item_type: string
+  depends_on: [has_self_employment_income]
+  rules_file: src/rules/income/self_employment_income.yaml
+
+withholding_document_types:
+  description: Document types required for withholding
+  type: list
+  item_type: string
+  depends_on: [wage_income_taxable]
+  rules_file: src/rules/payments/withholding.yaml
+
+estimated_payments_document_types:
+  description: Document types required for estimated payments
+  type: list
+  item_type: string
+  depends_on: [has_estimated_payments]
+  rules_file: src/rules/payments/estimated_payments.yaml
+
+charitable_document_types:
+  description: Document types required for charitable contributions
+  type: list
+  item_type: string
+  depends_on: [has_charitable_deduction]
+  rules_file: src/rules/deductions/charitable_contributions.yaml
+
+medical_document_types:
+  description: Document types required for medical expenses
+  type: list
+  item_type: string
+  depends_on: [medical_expenses_exceed_threshold]
+  rules_file: src/rules/deductions/medical_expenses.yaml
+
+salt_document_types:
+  description: Document types required for SALT
+  type: list
+  item_type: string
+  depends_on: [has_salt_deduction]
+  rules_file: src/rules/deductions/salt.yaml
+
+mortgage_document_types:
+  description: Document types required for mortgage interest
+  type: list
+  item_type: string
+  depends_on: [has_mortgage_interest_deduction]
+  rules_file: src/rules/deductions/mortgage_interest.yaml
+
+# --- Aggregated documentation requirements ---
+income_documentation_requirements:
+  description: Aggregated list of income document types required
+  type: list
+  item_type: string
+  depends_on: [has_income]
+  rules_file: src/rules/documentation/income_documents.yaml
+
+deduction_documentation_requirements:
+  description: Aggregated list of deduction document types required
+  type: list
+  item_type: string
+  depends_on: [should_itemize, may_claim_standard_deduction]
+  rules_file: src/rules/documentation/deduction_documents.yaml
+
+credit_documentation_requirements:
+  description: Aggregated list of credit document types required
+  type: list
+  item_type: string
+  depends_on:
+    - may_claim_child_tax_credit
+    - may_claim_other_dependent_credit
+    - may_claim_earned_income_credit
+    - may_claim_education_credit
+  rules_file: src/rules/documentation/credit_documents.yaml

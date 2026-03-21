@@ -1,0 +1,181 @@
+# Pub 501: https://www.irs.gov/pubs/p501 - Table 4
+# Qualifying Person
+- rule_id: qualifying_person_child_single
+  rule_type: decision
+  target: qualifying_person_hoh_status
+  conditions:
+    - node: qualifying_person_lived_with_taxpayer_more_than_half_of_year
+      operator: eq
+      value: true
+    - node: child_marital_status_on_1231
+      operator: eq
+      value: single
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_PUB_501_QUALIFYING_PERSON: https://www.irs.gov/pubs/p501
+
+- rule_id: qualifying_person_child_married_dependent
+  rule_type: decision
+  target: qualifying_person_hoh_status
+  conditions:
+    - node: qualifying_person_lived_with_taxpayer_more_than_half_of_year
+      operator: eq
+      value: true
+    - node: child_marital_status_on_1231
+      operator: eq
+      value: married
+    - node: child_is_dependent
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_PUB_501_QUALIFYING_PERSON: https://www.irs.gov/pubs/p501
+
+- rule_id: qualifying_person_child_married_not_dependent
+  rule_type: decision
+  target: qualifying_person_hoh_status
+  conditions:
+    - node: qualifying_person_lived_with_taxpayer_more_than_half_of_year
+      operator: eq
+      value: true
+    - node: child_marital_status_on_1231
+      operator: eq
+      value: married
+    - node: person_is_dependent
+      operator: eq
+      value: false
+  actions:
+    type: set
+    value: false
+  citations:
+    - IRS_PUB_501_QUALIFYING_PERSON: https://www.irs.gov/pubs/p501
+
+- rule_id: qualifying_person_mother_or_father
+  rule_type: decision
+  target: qualifying_person_hoh_status
+  conditions:
+    - node: person_is_dependent
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+
+- rule_id: qualifying_person_non_parent_relative
+  rule_type: decision
+  target: qualifying_person_hoh_status
+  conditions:
+    - node: qualifying_person_lived_with_taxpayer_more_than_half_of_year
+      operator: eq
+      value: true
+    - node: person_is_dependent
+      operator: eq
+      value: true
+    - node: person_is_relative_who_does_not_have_to_live_with_taxpayer
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_PUB_501_QUALIFYING_PERSON: https://www.irs.gov/pubs/p501
+
+- rule_id: qualifying_person_non_parent_relative_does_not_live_with_taxpayer
+  rule_type: decision
+  target: qualifying_person_hoh_status
+  conditions:
+    - node: qualifying_person_lived_with_taxpayer_more_than_half_of_year
+      operator: eq
+      value: false
+    - node: person_is_dependent
+      operator: eq
+      value: true
+    - node: person_is_relative_who_does_not_have_to_live_with_taxpayer
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: false
+  citations:
+    - IRS_PUB_501_QUALIFYING_PERSON: https://www.irs.gov/pubs/p501
+
+- rule_id: qualifying_person_non_parent_relative_not_related_to_taxpayer
+  rule_type: decision
+  target: qualifying_person_hoh_status
+  conditions:
+    - node: qualifying_person_lived_with_taxpayer_more_than_half_of_year
+      operator: eq
+      value: true
+    - node: person_is_dependent
+      operator: eq
+      value: true
+    - node: person_is_relative_who_does_not_have_to_live_with_taxpayer
+      operator: eq
+      value: false
+  actions:
+    type: set
+    value: false
+  citations:
+    - IRS_PUB_501_QUALIFYING_PERSON: https://www.irs.gov/pubs/p501
+
+- rule_id: qualifying_person_non_parent_relative_not_dependent
+  rule_type: decision
+  target: qualifying_person_hoh_status
+  conditions:
+    - node: qualifying_person_lived_with_taxpayer_more_than_half_of_year
+      operator: eq
+      value: any
+    - node: person_is_dependent
+      operator: eq
+      value: false
+    - node: person_is_relative_who_does_not_have_to_live_with_taxpayer
+      operator: eq
+      value: any
+  actions:
+    type: set
+    value: false
+  citations:
+    - IRS_PUB_501_QUALIFYING_PERSON: https://www.irs.gov/pubs/p501
+
+- rule_id: relative_who_does_not_have_to_live_with_taxpayer
+  rule_type: decision
+  target: person_is_relative_who_does_not_have_to_live_with_taxpayer
+  conditions_any:
+    - node: relationship_category
+      operator: in
+      value: 
+        - child
+        - stepchild
+        - foster_child
+        - grandchild
+        - brother
+        - sister
+        - half_brother
+        - half_sister
+        - stepbrother
+        - stepsister
+        - father
+        - mother
+        - grandparent
+        - direct_ancestor_other
+        - stepfather
+        - stepmother
+        - niece
+        - nephew
+        - aunt
+        - uncle
+        - son_in_law
+        - daughter_in_law
+        - father_in_law
+        - mother_in_law
+        - brother_in_law
+        - sister_in_law
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_PUB_501_QUALIFYING_PERSON: https://www.irs.gov/pubs/p501

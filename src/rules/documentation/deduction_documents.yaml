@@ -1,0 +1,27 @@
+# Documentation requirements for deductions
+# Deduction documentation complete
+- rule_id: deduction_documentation_requirements
+  rule_type: documentation
+  target: deduction_documentation_requirements
+  conditions:
+    - node: should_itemize
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: [Schedule_A, charitable_acknowledgments, medical_records, 1098, SALT_receipts]
+  citations:
+    - IRS_SCHEDULE_A: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+
+- rule_id: deduction_documentation_not_required_standard
+  rule_type: documentation
+  target: deduction_documentation_requirements
+  conditions:
+    - node: may_claim_standard_deduction
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: []
+  citations:
+    - IRS_1040: https://www.irs.gov/forms-pubs/about-form-1040

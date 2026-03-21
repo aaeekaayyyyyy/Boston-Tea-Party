@@ -1,0 +1,86 @@
+# Form 1099-NEC: https://www.irs.gov/forms-pubs/about-form-1099-nec
+# Schedule C: https://www.irs.gov/forms-pubs/about-schedule-c-form-1040
+# Self-employment income
+- rule_id: has_self_employment_income_1099_nec
+  rule_type: decision
+  target: has_self_employment_income
+  conditions:
+    - node: has_1099_nec
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_1099_NEC: https://www.irs.gov/forms-pubs/about-form-1099-nec
+
+- rule_id: has_self_employment_income_schedule_c
+  rule_type: decision
+  target: has_self_employment_income
+  conditions:
+    - node: has_schedule_c_income
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_SCHEDULE_C: https://www.irs.gov/forms-pubs/about-schedule-c-form-1040
+
+- rule_id: no_self_employment_income
+  rule_type: decision
+  target: has_self_employment_income
+  conditions:
+    - node: has_1099_nec
+      operator: eq
+      value: false
+    - node: has_schedule_c_income
+      operator: eq
+      value: false
+  actions:
+    type: set
+    value: false
+  citations:
+    - IRS_1099_NEC: https://www.irs.gov/forms-pubs/about-form-1099-nec
+
+# Self-employment income is taxable when present
+- rule_id: self_employment_income_taxable
+  rule_type: decision
+  target: self_employment_income_taxable
+  conditions:
+    - node: has_self_employment_income
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_SCHEDULE_C: https://www.irs.gov/forms-pubs/about-schedule-c-form-1040
+
+# Documentation
+- rule_id: self_employment_requires_documentation
+  rule_type: decision
+  target: self_employment_requires_documentation
+  conditions:
+    - node: has_self_employment_income
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_1099_NEC: https://www.irs.gov/forms-pubs/about-form-1099-nec
+    - IRS_SCHEDULE_C: https://www.irs.gov/forms-pubs/about-schedule-c-form-1040
+
+- rule_id: self_employment_document_types
+  rule_type: documentation
+  target: self_employment_document_types
+  conditions:
+    - node: has_self_employment_income
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: [1099_NEC, Schedule_C]
+  citations:
+    - IRS_1099_NEC: https://www.irs.gov/forms-pubs/about-form-1099-nec

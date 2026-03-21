@@ -1,0 +1,27 @@
+# Credit for Other Dependents: https://www.irs.gov/credits-deductions/individuals/credit-for-other-dependents
+# May claim other dependent credit
+- rule_id: may_claim_other_dependent_credit
+  rule_type: decision
+  target: may_claim_other_dependent_credit
+  conditions:
+    - node: number_of_other_dependents
+      operator: gt
+      value: 0
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_ODC: https://www.irs.gov/credits-deductions/individuals/credit-for-other-dependents
+
+- rule_id: may_not_claim_other_dependent_credit
+  rule_type: decision
+  target: may_claim_other_dependent_credit
+  conditions:
+    - node: number_of_other_dependents
+      operator: eq
+      value: 0
+  actions:
+    type: set
+    value: false
+  citations:
+    - IRS_ODC: https://www.irs.gov/credits-deductions/individuals/credit-for-other-dependents

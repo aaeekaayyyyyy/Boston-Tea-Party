@@ -1,0 +1,134 @@
+{
+  "description": "Benchmark cases for tax credit rules",
+  "rules_files": [
+    "src/rules/taxes_and_credits/child_tax_credit.yaml",
+    "src/rules/taxes_and_credits/other_dependent_credit.yaml",
+    "src/rules/taxes_and_credits/earned_income_credit.yaml",
+    "src/rules/taxes_and_credits/education_credits.yaml"
+  ],
+  "cases": [
+    {
+      "case_id": "CTC_01",
+      "description": "Qualifying children, AGI under limit - may claim CTC",
+      "facts": {
+        "number_of_qualifying_children": 2,
+        "child_tax_credit_agi_under_limit": true
+      },
+      "expected": {
+        "may_claim_child_tax_credit": true
+      }
+    },
+    {
+      "case_id": "CTC_02",
+      "description": "No qualifying children - may not claim CTC",
+      "facts": {
+        "number_of_qualifying_children": 0,
+        "child_tax_credit_agi_under_limit": true
+      },
+      "expected": {
+        "may_claim_child_tax_credit": false
+      }
+    },
+    {
+      "case_id": "CTC_03",
+      "description": "Qualifying children but AGI over phaseout - may not claim CTC",
+      "facts": {
+        "number_of_qualifying_children": 2,
+        "child_tax_credit_agi_under_limit": false
+      },
+      "expected": {
+        "may_claim_child_tax_credit": false
+      }
+    },
+    {
+      "case_id": "ODC_01",
+      "description": "Other dependents (e.g., qualifying relative) - may claim ODC",
+      "facts": {
+        "number_of_other_dependents": 1
+      },
+      "expected": {
+        "may_claim_other_dependent_credit": true
+      }
+    },
+    {
+      "case_id": "ODC_02",
+      "description": "No other dependents - may not claim ODC",
+      "facts": {
+        "number_of_other_dependents": 0
+      },
+      "expected": {
+        "may_claim_other_dependent_credit": false
+      }
+    },
+    {
+      "case_id": "ODC_03",
+      "description": "Multiple other dependents",
+      "facts": {
+        "number_of_other_dependents": 3
+      },
+      "expected": {
+        "may_claim_other_dependent_credit": true
+      }
+    },
+    {
+      "case_id": "EIC_01",
+      "description": "Earned income, under investment limit, eligible filing status",
+      "facts": {
+        "earned_income_amount": 25000,
+        "investment_income_under_eic_limit": true,
+        "earned_income_credit_filing_status_eligible": true
+      },
+      "expected": {
+        "may_claim_earned_income_credit": true
+      }
+    },
+    {
+      "case_id": "EIC_02",
+      "description": "No earned income - may not claim EIC",
+      "facts": {
+        "earned_income_amount": 0,
+        "investment_income_under_eic_limit": true,
+        "earned_income_credit_filing_status_eligible": true
+      },
+      "expected": {
+        "may_claim_earned_income_credit": false
+      }
+    },
+    {
+      "case_id": "EIC_03",
+      "description": "Investment income over limit - may not claim EIC",
+      "facts": {
+        "earned_income_amount": 20000,
+        "investment_income_under_eic_limit": false,
+        "earned_income_credit_filing_status_eligible": true
+      },
+      "expected": {
+        "may_claim_earned_income_credit": false
+      }
+    },
+    {
+      "case_id": "EDU_01",
+      "description": "Qualified education expenses, documented, AGI under limit",
+      "facts": {
+        "qualified_education_expenses_paid": 5000,
+        "education_expenses_documented": true,
+        "modified_agi_under_education_limit": true
+      },
+      "expected": {
+        "may_claim_education_credit": true
+      }
+    },
+    {
+      "case_id": "EDU_02",
+      "description": "No education expenses - may not claim education credit",
+      "facts": {
+        "qualified_education_expenses_paid": 0,
+        "education_expenses_documented": false,
+        "modified_agi_under_education_limit": true
+      },
+      "expected": {
+        "may_claim_education_credit": false
+      }
+    }
+  ]
+}

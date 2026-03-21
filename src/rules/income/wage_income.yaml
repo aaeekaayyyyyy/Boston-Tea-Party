@@ -1,0 +1,54 @@
+# Form W-2: https://www.irs.gov/forms-pubs/about-form-w-2
+# Wage income is taxable
+- rule_id: wage_income_taxable_w2_present
+  rule_type: decision
+  target: wage_income_taxable
+  conditions:
+    - node: has_w2_income
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_W2: https://www.irs.gov/forms-pubs/about-form-w-2
+
+- rule_id: wage_income_taxable_no_w2
+  rule_type: decision
+  target: wage_income_taxable
+  conditions:
+    - node: has_w2_income
+      operator: eq
+      value: false
+  actions:
+    type: set
+    value: false
+  citations:
+    - IRS_W2: https://www.irs.gov/forms-pubs/about-form-w-2
+
+# Documentation
+- rule_id: wage_income_requires_documentation
+  rule_type: decision
+  target: wage_income_requires_documentation
+  conditions:
+    - node: wage_income_taxable
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: true
+  citations:
+    - IRS_W2: https://www.irs.gov/forms-pubs/about-form-w-2
+
+- rule_id: wage_income_document_types
+  rule_type: documentation
+  target: wage_income_document_types
+  conditions:
+    - node: wage_income_taxable
+      operator: eq
+      value: true
+  actions:
+    type: set
+    value: [W2]
+  citations:
+    - IRS_W2: https://www.irs.gov/forms-pubs/about-form-w-2
