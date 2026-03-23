@@ -7,22 +7,33 @@ Evaluation framework for Boston Tea Party 2.0.
 ```bash
 pip install -r requirements.txt
 
-# HHEM only (no API key needed)
+# Local metric smoke check (LettuceDetect + legacy HHEM, no API key needed)
 python -m eval.smoke_test --hhem-only
 
 # Full smoke test (needs GEMINI_API_KEY)
 export GEMINI_API_KEY=your-key
 python -m eval.smoke_test
 
-# Run eval
+# Standalone rule benchmark (separate from answer-generation eval)
+python -m eval.constraint_benchmark
+
+# Run eval (uses LettuceDetect for hallucination)
 python -m eval.harness
 
-# HHEM only, no API calls
+# Legacy compatibility flag: skip faithfulness/API calls
 python -m eval.harness --hhem-only
 
 # Dry run (load scenarios only)
 python -m eval.harness --dry-run
 ```
+
+The harness now uses LettuceDetect as its hallucination metric. The retained
+`--hhem-only` flag is only a compatibility shortcut for running the local-only
+subset without faithfulness/API calls.
+
+`python -m eval.constraint_benchmark` is a separate standalone rule-benchmark
+path for scoring the YAML rule benchmarks under `src/benchmarks/`. It does not
+run the answer-generation harness.
 
 ## Environment variables
 

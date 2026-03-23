@@ -37,19 +37,29 @@ Key risk in our domain: fabricated IRC section numbers, wrong tax rates/threshol
 
 ## Citation existence rate
 
-For each citation in the response, check: (1) does the cited source exist in our corpus? (2) is the citation in valid legal format? Uses eyecite for case law format and regex for IRC sections and Treasury Regulations.
+Current harness implementation is benchmark-relative, not corpus-global.
 
-Score = citations pointing to real, correctly-formatted sources / total citations.
+For each required benchmark citation, check whether the response includes that citation string after light normalization (case folding, `section-sign` / `section` normalization, `IRC` / `26 USC` normalization, `IRS Pub.` / `IRS Publication` normalization).
+
+This remains strict about section targets. Example: `IRS Pub. 501` does **not** satisfy `IRS Pub. 501, Filing Status - Head of Household`.
+
+Score = matched required citations / total required citations.
 
 ## Citation F1
 
-We use cited sentences as the evaluation unit (sentence-level approximation of atomic claims).
+We use block-scoped practical support coverage rather than exact sentence-local inline citation matching.
 
-For each sentence with one or more citations, feed the sentence as hypothesis and the cited passage(s) as premise into DeBERTa-MNLI. Entailment = supported. Neutral or contradiction = unsupported.
+The answer is split into local support blocks. A citation-bearing lead sentence can support nearby claim sentences in the same block, including numbered list items. Citation-only lines can also attach to the nearest adjacent substantive block.
+
+For each citation-required claim sentence with an active mapped citation:
+- first run a deterministic numeric-support heuristic for simple threshold/rate claims (`not over`, `under age`, `at least X%`, `more than half`, simple dollar thresholds)
+- if that heuristic cannot prove support, fall back to DeBERTa-MNLI on the cleaned claim sentence against the cited passage
+
+Entailment or heuristic support = supported. Neutral or contradiction = unsupported.
 
 **Citation recall** is measured against citation-required sentences: answer sentences containing legal or factual claims depending on source material (thresholds, rates, deadlines, eligibility rules, publication guidance, case holdings, cross-references to other IRC sections). Recall = citation-required sentences with at least one valid supporting citation / total citation-required sentences.
 
-**Citation precision** uses a drop-one necessity test. For each cited sentence, remove one citation at a time and re-run entailment. If entailment still holds, the removed citation was unnecessary. Precision = necessary citations / total citations provided.
+**Citation precision** is measured on explicit citation uses only. A citation counts as necessary if it supports at least one claim sentence in the local block it governs. Precision = necessary citations / total explicit citations provided.
 
 **Citation F1** = harmonic mean of precision and recall.
 
@@ -68,10 +78,10 @@ Pre/post scoring. Participant reads a tax scenario, answers comprehension questi
 ## Verification layer pipeline (build reference for Week 3)
 
 1. **Claim decomposition:** Break answer into atomic claims (RAGAS evaluator LLM call).
-2. **Citation extraction:** Parse inline citations. Validate format with regex + eyecite.
-3. **Citation mapping:** Look up each citation in retrieval output using `citation` and `source_type` metadata.
-4. **NLI verification:** For each (claim, cited passage) pair, run DeBERTa-MNLI for entailment.
-5. **Existence check:** Verify cited sources exist in corpus.
+2. **Citation extraction:** Match benchmark-required citations in the rendered answer using light normalization.
+3. **Citation mapping:** Map matched citations to the benchmark's `true_source_passages`.
+4. **Support verification:** For each (claim, cited passage) pair, run the numeric-support heuristic first for simple threshold/rate claims, then fall back to DeBERTa-MNLI.
+5. **Existence check:** Score whether the required benchmark citation target appears in the answer.
 6. **Tax-year check:** For IRS Pub citations, verify `publication_year` matches scenario tax year.
 7. **Span detection:** Run LettuceDetect on full (context, answer) pair.
 8. **Aggregate:** Compute all six comparison metrics.
