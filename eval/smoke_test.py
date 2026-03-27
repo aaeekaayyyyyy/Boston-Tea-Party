@@ -1,10 +1,11 @@
 """
-Smoke test: verify RAGAS and HHEM work with a single hardcoded example.
+Smoke test: verify LettuceDetect, RAGAS, and the legacy HHEM local check with a
+single hardcoded example.
 Run this first to confirm your environment is set up correctly.
 
 Usage:
-    python -m eval.smoke_test              # test both RAGAS + HHEM
-    python -m eval.smoke_test --hhem-only  # test HHEM only (no API key needed)
+    python -m eval.smoke_test              # test local metrics + RAGAS
+    python -m eval.smoke_test --hhem-only  # test only the local metric smoke path
 """
 import argparse
 import sys
@@ -26,7 +27,8 @@ SAMPLE_CONTEXT = [
 
 
 def test_hhem():
-    print("\n--- Testing HHEM-2.1-Open ---")
+    """Run the legacy HHEM smoke check."""
+    print("\n--- Testing legacy HHEM-2.1-Open smoke path ---")
     from eval.metrics.hallucination import score_hhem
     score = score_hhem(SAMPLE_CONTEXT[0], SAMPLE_RESPONSE)
     print(f"HHEM score: {score:.4f}")
@@ -38,7 +40,23 @@ def test_hhem():
     return True
 
 
+def test_lettucedetect():
+    """Run the current LettuceDetect smoke check."""
+    print("\n--- Testing LettuceDetect ---")
+    from eval.metrics.lettucedetect_metric import score_lettucedetect
+
+    result = score_lettucedetect(
+        contexts=SAMPLE_CONTEXT,
+        question=SAMPLE_QUESTION,
+        answer=SAMPLE_RESPONSE,
+    )
+    print(f"Hallucination rate: {result['hallucination_rate']:.4f}")
+    print(f"Spans flagged: {result['n_spans']}")
+    return True
+
+
 def test_ragas():
+    """Run the faithfulness smoke check."""
     print("\n--- Testing RAGAS Faithfulness ---")
     from eval.metrics.faithfulness import score_faithfulness
     score = score_faithfulness(
@@ -52,6 +70,7 @@ def test_ragas():
 
 
 def main():
+    """Run the smoke test CLI."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--hhem-only", action="store_true")
     args = parser.parse_args()
@@ -63,8 +82,15 @@ def main():
     try:
         test_hhem()
     except Exception as e:
-        print(f"HHEM test failed: {e}")
+        print(f"Legacy HHEM smoke test failed: {e}")
         print("  Make sure transformers and torch are installed.")
+        sys.exit(1)
+
+    try:
+        test_lettucedetect()
+    except Exception as e:
+        print(f"LettuceDetect smoke test failed: {e}")
+        print("  Make sure lettucedetect, transformers, and torch are installed.")
         sys.exit(1)
 
     if not args.hhem_only:
@@ -73,7 +99,7 @@ def main():
         except Exception as e:
             print(f"RAGAS test failed: {e}")
             print("  Check GEMINI_API_KEY env var.")
-            print("  Or run with --hhem-only to skip RAGAS.")
+            print("  Or run with --hhem-only to skip RAGAS and only run the local metric smoke path.")
             sys.exit(1)
 
     print("\n=== All tests passed ===")
