@@ -1,0 +1,226 @@
+[
+  {
+    "id": "FS-HOH-01",
+    "question": "Can a married person who lived apart from their spouse for the last 6 months of the year, paid more than half the cost of keeping up their home, and has a qualifying child file as head of household?",
+    "answer": "Yes. A married person who is considered unmarried (lived apart from spouse for the last 6 months), paid more than half the cost of keeping up a home, and has a qualifying person living with them for more than half the year may file as head of household.",
+    "required_citations": ["IRS Pub. 501, Filing Status - Head of Household"],
+    "constraint_result": {
+      "eligible": true,
+      "conditions_met": ["considered_unmarried", "paid_more_than_half_home_costs", "has_qualifying_person"]
+    },
+    "true_source_passages": [
+      {
+        "citation": "IRS Pub. 501, Filing Status - Head of Household",
+        "text": "You may be able to file as head of household if you meet all the following requirements: You are unmarried or considered unmarried on the last day of the year. You paid more than half the cost of keeping up a home for the year. A qualifying person lived with you in the home for more than half the year. Even if you are married, you are considered unmarried if your spouse did not live in your home during the last 6 months of the tax year."
+      }
+    ],
+    "question_type": "eligibility_determination",
+    "source_type": "irs_pubs",
+    "difficulty": "medium",
+    "component_tested": ["constraint_engine", "generation"],
+    "source_case_id": "HOH_01",
+    "source_benchmark_file": "src/benchmarks/filing_status_cases.json"
+  },
+  {
+    "id": "FS-SINGLE-01",
+    "question": "What filing status should an unmarried single person use if they are not eligible for head of household or qualifying surviving spouse?",
+    "answer": "A single unmarried person who does not qualify for head of household or qualifying surviving spouse should file as single.",
+    "required_citations": ["IRS Pub. 501, Filing Status - Single"],
+    "constraint_result": {
+      "eligible": true,
+      "conditions_met": ["filing_status_single"]
+    },
+    "true_source_passages": [
+      {
+        "citation": "IRS Pub. 501, Filing Status - Single",
+        "text": "Your filing status is single if, on the last day of the year, you are unmarried or legally separated from your spouse under a divorce or separate maintenance decree, and you do not qualify for another filing status."
+      }
+    ],
+    "question_type": "eligibility_determination",
+    "source_type": "irs_pubs",
+    "difficulty": "easy",
+    "component_tested": ["constraint_engine", "generation"],
+    "source_case_id": "SINGLE_01",
+    "source_benchmark_file": "src/benchmarks/filing_status_cases.json"
+  },
+  {
+    "id": "FS-MFJ-01",
+    "question": "Can a married couple file jointly if both spouses agree?",
+    "answer": "Yes. If you are married and both you and your spouse agree to file a joint return, you can use the married filing jointly filing status.",
+    "required_citations": ["IRS Pub. 501, Filing Status - Married Filing Jointly"],
+    "constraint_result": {
+      "eligible": true,
+      "conditions_met": ["married", "spouse_willing_to_file_jointly"]
+    },
+    "true_source_passages": [
+      {
+        "citation": "IRS Pub. 501, Filing Status - Married Filing Jointly",
+        "text": "If you are married, you and your spouse can choose to file a joint return. On a joint return, you report your combined income and deduct your combined allowable expenses. You can file a joint return even if one of you had no income or deductions."
+      }
+    ],
+    "question_type": "eligibility_determination",
+    "source_type": "irs_pubs",
+    "difficulty": "easy",
+    "component_tested": ["constraint_engine", "generation"],
+    "source_case_id": "MFJ_01",
+    "source_benchmark_file": "src/benchmarks/filing_status_cases.json"
+  },
+  {
+    "id": "FS-MFS-01",
+    "question": "If a married person's spouse refuses to file jointly, what filing status must they use?",
+    "answer": "If your spouse does not agree to file a joint return, you must use the married filing separately filing status.",
+    "required_citations": ["IRS Pub. 501, Filing Status - Married Filing Separately"],
+    "constraint_result": {
+      "eligible": true,
+      "conditions_met": ["married", "spouse_not_willing_to_file_jointly"]
+    },
+    "true_source_passages": [
+      {
+        "citation": "IRS Pub. 501, Filing Status - Married Filing Separately",
+        "text": "If you are married and do not file a joint return, you must file as married filing separately unless you qualify for head of household status. You may want to file separately if you want to be responsible only for your own tax, or if this results in less tax than a joint return."
+      }
+    ],
+    "question_type": "eligibility_determination",
+    "source_type": "irs_pubs",
+    "difficulty": "easy",
+    "component_tested": ["constraint_engine", "generation"],
+    "source_case_id": "MFS_01",
+    "source_benchmark_file": "src/benchmarks/filing_status_cases.json"
+  },
+  {
+    "id": "FS-HOH-NEG-01",
+    "question": "Can someone who is considered unmarried and eligible for head of household status file as HOH if they do not have a qualifying person?",
+    "answer": "No. Even if you are considered unmarried, you cannot file as head of household unless a qualifying person lived with you in the home for more than half the year.",
+    "required_citations": ["IRS Pub. 501, Filing Status - Head of Household"],
+    "constraint_result": {
+      "eligible": false,
+      "conditions_met": ["considered_unmarried"],
+      "conditions_failed": ["has_qualifying_person"]
+    },
+    "true_source_passages": [
+      {
+        "citation": "IRS Pub. 501, Filing Status - Head of Household",
+        "text": "You may be able to file as head of household if you meet all the following requirements: You are unmarried or considered unmarried on the last day of the year. You paid more than half the cost of keeping up a home for the year. A qualifying person lived with you in the home for more than half the year. Even if you are married, you are considered unmarried if your spouse did not live in your home during the last 6 months of the tax year."
+      }
+    ],
+    "question_type": "eligibility_determination",
+    "source_type": "irs_pubs",
+    "difficulty": "medium",
+    "component_tested": ["constraint_engine", "generation"],
+    "source_case_id": "HOH_NO_QUALIFYING_PERSON",
+    "source_benchmark_file": "src/benchmarks/filing_status_cases.json"
+  },
+  {
+    "id": "DEP-QC-PASS-01",
+    "question": "Can a 10-year-old son who lived with the taxpayer all year, did not provide more than half his own support, did not file a joint return, and is a U.S. citizen be claimed as a qualifying child?",
+    "answer": "Yes. The child meets all six tests for a qualifying child: the relationship test (son), the age test (under 19), the residency test (lived with taxpayer more than half the year), the support test (did not provide more than half own support), the joint return test, and the citizenship test.",
+    "required_citations": ["IRS Pub. 501, Dependents - Qualifying Child"],
+    "constraint_result": {
+      "eligible": true,
+      "conditions_met": ["relationship_test", "age_test", "residency_test", "support_test", "joint_return_test", "citizenship_test"]
+    },
+    "true_source_passages": [
+      {
+        "citation": "IRS Pub. 501, Dependents - Qualifying Child",
+        "text": "A qualifying child must satisfy four tests: Relationship Test, Age Test, Residency Test, and Support Test. Relationship: The child must be your son, daughter, stepchild, foster child, brother, sister, half brother, half sister, stepbrother, stepsister, or a descendant of any of them. Age: The child must be under age 19 at the end of the year, or under age 24 if a full-time student, or any age if permanently and totally disabled. Residency: The child must have lived with you for more than half of the year. Support: The child must not have provided more than half of his or her own support for the year."
+      }
+    ],
+    "question_type": "eligibility_determination",
+    "source_type": "irs_pubs",
+    "difficulty": "easy",
+    "component_tested": ["constraint_engine", "generation"],
+    "source_case_id": "QC_ALL_TESTS_PASS_01",
+    "source_benchmark_file": "src/benchmarks/dependency_cases.json"
+  },
+  {
+    "id": "DEP-QC-AGE-FAIL-01",
+    "question": "Can a 22-year-old son who is not a full-time student and is not disabled be claimed as a qualifying child?",
+    "answer": "No. The child fails the age test. To be a qualifying child, the child must be under age 19 at the end of the year, or under age 24 if a full-time student, or any age if permanently and totally disabled. A 22-year-old who is not a student and not disabled does not meet this requirement.",
+    "required_citations": ["IRS Pub. 501, Dependents - Qualifying Child"],
+    "constraint_result": {
+      "eligible": false,
+      "conditions_met": ["relationship_test", "residency_test", "support_test", "joint_return_test", "citizenship_test"],
+      "conditions_failed": ["age_test"]
+    },
+    "true_source_passages": [
+      {
+        "citation": "IRS Pub. 501, Dependents - Qualifying Child",
+        "text": "A qualifying child must satisfy four tests: Relationship Test, Age Test, Residency Test, and Support Test. Relationship: The child must be your son, daughter, stepchild, foster child, brother, sister, half brother, half sister, stepbrother, stepsister, or a descendant of any of them. Age: The child must be under age 19 at the end of the year, or under age 24 if a full-time student, or any age if permanently and totally disabled. Residency: The child must have lived with you for more than half of the year. Support: The child must not have provided more than half of his or her own support for the year."
+      }
+    ],
+    "question_type": "eligibility_determination",
+    "source_type": "irs_pubs",
+    "difficulty": "medium",
+    "component_tested": ["constraint_engine", "generation"],
+    "source_case_id": "QC_AGE_FAIL_01",
+    "source_benchmark_file": "src/benchmarks/dependency_cases.json"
+  },
+  {
+    "id": "DEP-QC-REL-FAIL-01",
+    "question": "Can a 10-year-old cousin who lived with the taxpayer all year be claimed as a qualifying child?",
+    "answer": "No. A cousin does not meet the relationship test. To be a qualifying child, the person must be the taxpayer's son, daughter, stepchild, foster child, brother, sister, half brother, half sister, stepbrother, stepsister, or a descendant of any of them. A cousin is not on this list.",
+    "required_citations": ["IRS Pub. 501, Dependents - Qualifying Child"],
+    "constraint_result": {
+      "eligible": false,
+      "conditions_met": ["age_test", "residency_test", "support_test", "joint_return_test", "citizenship_test"],
+      "conditions_failed": ["relationship_test"]
+    },
+    "true_source_passages": [
+      {
+        "citation": "IRS Pub. 501, Dependents - Qualifying Child",
+        "text": "A qualifying child must satisfy four tests: Relationship Test, Age Test, Residency Test, and Support Test. Relationship: The child must be your son, daughter, stepchild, foster child, brother, sister, half brother, half sister, stepbrother, stepsister, or a descendant of any of them. Age: The child must be under age 19 at the end of the year, or under age 24 if a full-time student, or any age if permanently and totally disabled. Residency: The child must have lived with you for more than half of the year. Support: The child must not have provided more than half of his or her own support for the year."
+      }
+    ],
+    "question_type": "eligibility_determination",
+    "source_type": "irs_pubs",
+    "difficulty": "medium",
+    "component_tested": ["constraint_engine", "generation"],
+    "source_case_id": "QC_RELATIONSHIP_FAIL_01",
+    "source_benchmark_file": "src/benchmarks/dependency_cases.json"
+  },
+  {
+    "id": "CR-CTC-01",
+    "question": "Can a taxpayer with 2 qualifying children and AGI under the phase-out limit claim the child tax credit?",
+    "answer": "Yes. A taxpayer with qualifying children and adjusted gross income under the applicable phase-out threshold may claim the child tax credit.",
+    "required_citations": ["IRC § 24, Child Tax Credit"],
+    "constraint_result": {
+      "eligible": true,
+      "conditions_met": ["has_qualifying_children", "agi_under_limit"]
+    },
+    "true_source_passages": [
+      {
+        "citation": "IRC § 24, Child Tax Credit",
+        "text": "There shall be allowed as a credit against the tax imposed by this chapter for the taxable year an amount equal to $2,000 multiplied by the number of qualifying children of the taxpayer. The credit begins to phase out when modified adjusted gross income exceeds $200,000 ($400,000 for married filing jointly)."
+      }
+    ],
+    "question_type": "eligibility_determination",
+    "source_type": "irc",
+    "difficulty": "easy",
+    "component_tested": ["constraint_engine", "generation"],
+    "source_case_id": "CTC_01",
+    "source_benchmark_file": "src/benchmarks/credit_cases.json"
+  },
+  {
+    "id": "CR-CTC-AGI-FAIL-01",
+    "question": "Can a taxpayer with 2 qualifying children but AGI above the phase-out limit claim the full child tax credit?",
+    "answer": "No. If the taxpayer's adjusted gross income exceeds the applicable phase-out threshold, the child tax credit is reduced or eliminated.",
+    "required_citations": ["IRC § 24, Child Tax Credit"],
+    "constraint_result": {
+      "eligible": false,
+      "conditions_met": ["has_qualifying_children"],
+      "conditions_failed": ["agi_under_limit"]
+    },
+    "true_source_passages": [
+      {
+        "citation": "IRC § 24, Child Tax Credit",
+        "text": "There shall be allowed as a credit against the tax imposed by this chapter for the taxable year an amount equal to $2,000 multiplied by the number of qualifying children of the taxpayer. The credit begins to phase out when modified adjusted gross income exceeds $200,000 ($400,000 for married filing jointly)."
+      }
+    ],
+    "question_type": "eligibility_determination",
+    "source_type": "irc",
+    "difficulty": "medium",
+    "component_tested": ["constraint_engine", "generation"],
+    "source_case_id": "CTC_03",
+    "source_benchmark_file": "src/benchmarks/credit_cases.json"
+  }
+]
