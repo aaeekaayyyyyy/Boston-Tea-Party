@@ -1,0 +1,74 @@
+{
+  "itemized_deductions_total": {
+    "type": [
+      "number",
+      "null"
+    ]
+  },
+  "itemized_deductions_exceed_standard": {
+    "type": [
+      "boolean",
+      "null"
+    ]
+  },
+  "charitable_cash_contributions": {
+    "type": [
+      "number",
+      "null"
+    ]
+  },
+  "charitable_noncash_contributions": {
+    "type": [
+      "number",
+      "null"
+    ]
+  },
+  "charitable_contributions_documented": {
+    "type": [
+      "boolean",
+      "null"
+    ]
+  },
+  "medical_expenses_paid": {
+    "type": [
+      "number",
+      "null"
+    ]
+  },
+  "mortgage_interest_paid": {
+    "type": [
+      "number",
+      "null"
+    ]
+  },
+  "real_estate_taxes_paid": {
+    "type": [
+      "number",
+      "null"
+    ]
+  },
+  "state_local_income_tax_paid": {
+    "type": [
+      "number",
+      "null"
+    ]
+  },
+  "state_local_sales_tax_paid": {
+    "type": [
+      "number",
+      "null"
+    ]
+  },
+  "has_other_qualifying_persons": {
+    "type": [
+      "boolean",
+      "null"
+    ]
+  },
+  "notes": {
+    "type": [
+      "string",
+      "null"
+    ]
+  }
+}

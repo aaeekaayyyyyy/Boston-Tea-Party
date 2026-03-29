@@ -1,0 +1,50 @@
+[
+  {
+    "id": "PLAN-001",
+    "question": "A married taxpayer in 2025 is not filing jointly, has a qualifying child, and paid more than half the cost of keeping up the home. The planner still does not know whether the spouse lived in the home during the last 6 months of the year. What should it ask next?",
+    "answer": "Ask whether the spouse lived in the home during the last 6 months of the tax year.",
+    "required_citations": [
+      "IRS Pub. 501 (2025), Filing Status"
+    ],
+    "constraint_result": {
+      "eligible": false,
+      "conditions_met": [
+        "marital_status_known",
+        "joint_return_path_not_selected",
+        "qualifying_person_signal_present",
+        "home_cost_signal_present"
+      ]
+    },
+    "question_type": "planning scenario",
+    "source_type": "irs_pubs",
+    "difficulty": "easy",
+    "component_tested": [
+      "planning_agent",
+      "constraint_adapter"
+    ]
+  },
+  {
+    "id": "PLAN-002",
+    "question": "A married taxpayer in 2025 is not filing jointly, did not live with the spouse in the last 6 months, has a qualifying child, paid more than half the home costs, has charitable contributions with documentation, and has enough detail to compare itemizing against the standard deduction. What should the planner do next?",
+    "answer": "Build retrieval requests for filing status and deduction support.",
+    "required_citations": [
+      "IRS Pub. 501 (2025), Filing Status",
+      "IRS Pub. 526 (2025), Contributions"
+    ],
+    "constraint_result": {
+      "eligible": true,
+      "conditions_met": [
+        "head_of_household_path_checkable",
+        "deduction_path_checkable",
+        "documentation_signal_present"
+      ]
+    },
+    "question_type": "planning scenario",
+    "source_type": "irs_pubs",
+    "difficulty": "medium",
+    "component_tested": [
+      "planning_agent",
+      "retrieval_router"
+    ]
+  }
+]
