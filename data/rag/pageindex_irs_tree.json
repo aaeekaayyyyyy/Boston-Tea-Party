@@ -1,0 +1,70 @@
+{
+  "result": [
+    {
+      "node_id": "0000",
+      "title": "Dependents, Standard Deduction, and Filing Information",
+      "page_index": 1,
+      "text": "IRS Publication 501 explains who must file, filing status, dependents, and the standard deduction for individual taxpayers.",
+      "nodes": [
+        {
+          "node_id": "0004",
+          "title": "Who Must File",
+          "page_index": 3,
+          "text": "Whether you must file a federal income tax return depends on your gross income, filing status, age, and whether you are a dependent.",
+          "nodes": []
+        },
+        {
+          "node_id": "0006",
+          "title": "Filing Status",
+          "page_index": 5,
+          "text": "Your filing status affects your filing requirement, standard deduction, and tax rate. Options include single, married filing jointly, married filing separately, head of household, and qualifying surviving spouse.",
+          "nodes": [
+            {
+              "node_id": "0011",
+              "title": "Head of Household",
+              "page_index": 8,
+              "text": "You may be able to file as head of household if you are considered unmarried, paid more than half the cost of keeping up a home for the year, and a qualifying person lived with you in the home for more than half the year.",
+              "nodes": []
+            },
+            {
+              "node_id": "0009",
+              "title": "Married Filing Jointly",
+              "page_index": 6,
+              "text": "Married filing jointly combines income and deductions of both spouses on one return.",
+              "nodes": []
+            },
+            {
+              "node_id": "0010",
+              "title": "Married Filing Separately",
+              "page_index": 7,
+              "text": "Married filing separately may limit certain credits and deductions compared to joint filing.",
+              "nodes": []
+            }
+          ]
+        },
+        {
+          "node_id": "0013",
+          "title": "Dependents",
+          "page_index": 11,
+          "text": "Rules for qualifying child and qualifying relative, including relationship, age, residency, support, and joint return tests.",
+          "nodes": [
+            {
+              "node_id": "0015",
+              "title": "Qualifying Child",
+              "page_index": 12,
+              "text": "A qualifying child must meet relationship, age, residency, support, and joint return tests.",
+              "nodes": []
+            }
+          ]
+        },
+        {
+          "node_id": "0009b",
+          "title": "Standard Deduction",
+          "page_index": 23,
+          "text": "Taxpayers who do not itemize deductions may take the standard deduction. Amounts vary by filing status and age or blindness.",
+          "nodes": []
+        }
+      ]
+    }
+  ]
+}

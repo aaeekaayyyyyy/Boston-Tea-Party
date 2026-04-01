@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 import sys
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -11,6 +13,7 @@ if str(ROOT) not in sys.path:
 from src.planning.agent import PlanningAgent
 from src.planning.constraint_adapter import SimpleConstraintEngine
 from src.planning.contracts import RetrievalChunk, RetrievalChunkMetadata, RetrievalResponse
+from src.rag.client import HybridRetrievalClient
 
 
 class MockRetrievalClient:
@@ -56,10 +59,22 @@ def print_block(title, payload):
     print(json.dumps(payload, indent=2))
 
 
-def main():
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Planning agent demo")
+    parser.add_argument(
+        "--mock",
+        action="store_true",
+        help="Use mock retrieval instead of HybridRetrievalClient (PageIndex cache + IRC + BM25)",
+    )
+    args = parser.parse_args()
+
+    retrieval_client: Any = (
+        MockRetrievalClient() if args.mock else HybridRetrievalClient(repo_root=ROOT)
+    )
+
     agent = PlanningAgent(
         constraint_engine=SimpleConstraintEngine(),
-        retrieval_client=MockRetrievalClient(),
+        retrieval_client=retrieval_client,
     )
 
     partial_facts = {

@@ -5,6 +5,8 @@
 # -- RAG pipeline --
 pageindex>=0.2.5
 requests>=2.25.0,<3.0.0
+beautifulsoup4>=4.12.0
+rank-bm25>=0.2.2
 
 # -- eval harness --
 ragas>=0.4.0
