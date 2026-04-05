@@ -1,0 +1,20 @@
+{"id": "irs-hoh-1", "query": "head of household filing status rules", "source_hint": "irs_pubs", "top_k": 5, "options": {"tax_year": 2025, "irs_llm_rerank": false, "irs_publication": "501"}, "expect": {"heading_substrings_any": ["head of household", "household"]}}
+{"id": "irs-joint-1", "query": "married filing jointly requirements", "source_hint": "irs_pubs", "top_k": 5, "options": {"tax_year": 2025, "irs_llm_rerank": false}, "expect": {"heading_substrings_any": ["joint", "married"]}}
+{"id": "irc-std-1", "query": "standard deduction amount limitations", "source_hint": "irc", "top_k": 5, "options": {"irc_sections_hint": ["63"]}, "expect": {"section_in_top3": "63"}}
+{"id": "irc-fs-1", "query": "definition of surviving spouse for filing status", "source_hint": "irc", "top_k": 5, "options": {"irc_sections_hint": ["2", "1"]}, "expect": {"section_in_top3": "2"}}
+{"id": "irc-170-1", "query": "charitable contribution deduction substantiation written acknowledgment", "source_hint": "irc", "top_k": 5, "options": {"irc_sections_hint": ["170"]}, "expect": {"section_in_top3": "170"}}
+{"id": "tc-charity-1", "query": "section 170 charitable contribution acknowledgment contemporaneous", "source_hint": "tax_court", "top_k": 3, "options": {}, "expect": {"case_name_substrings_any": ["Durden", "Chiarelli"]}}
+{"id": "tc-pal-1", "query": "passive activity loss section 469 thoroughbred", "source_hint": "tax_court", "top_k": 3, "options": {}, "expect": {"case_name_substrings_any": ["Tolin"]}}
+{"id": "auto-irc-1", "query": "internal revenue code section 63 standard deduction", "source_hint": null, "top_k": 4, "options": {}, "expect": {"sources_include": "irc"}}
+{"id": "auto-tc-1", "query": "tax court opinion commissioner deficiency", "source_hint": null, "top_k": 3, "options": {}, "expect": {"sources_include": "tax_court"}}
+{"id": "irs-std-pub", "query": "standard deduction versus itemizing IRS publication", "source_hint": "irs_pubs", "top_k": 5, "options": {"irs_llm_rerank": false}, "expect": {"heading_substrings_any": ["standard", "itemiz"]}}
+{"id": "irc-152-1", "query": "qualifying child dependent definition", "source_hint": "irc", "top_k": 5, "options": {"irc_sections_hint": ["152", "2"]}, "expect": {"section_in_top3": "152"}}
+{"id": "irc-7703-1", "query": "determination of marital status for provisions of this title last day of taxable year 7703", "source_hint": "irc", "top_k": 8, "eval_top_n": 5, "options": {"irc_sections_hint": ["7703", "2"]}, "expect": {"section_in_top3": "7703"}}
+{"id": "irs-charity-pub", "query": "standard deduction itemized charitable contributions Schedule A", "source_hint": "irs_pubs", "top_k": 6, "eval_top_n": 6, "options": {"irs_publication": "501", "irs_llm_rerank": false}, "expect": {"heading_substrings_any": ["charit", "contribut"]}}
+{"id": "combo-1", "query": "filing status dependents IRC", "source_hint": null, "top_k": 6, "options": {}, "expect": {"min_chunks": 1}}
+{"id": "irc-68-1", "query": "overall limitation on itemized deductions", "source_hint": "irc", "top_k": 8, "eval_top_n": 6, "options": {"irc_sections_hint": ["68", "63"]}, "expect": {"section_in_top3": "68"}}
+{"id": "irs-hoh-2", "query": "considered unmarried head of household", "source_hint": "irs_pubs", "top_k": 5, "options": {"irs_llm_rerank": false}, "expect": {"heading_substrings_any": ["household", "unmarried"]}}
+{"id": "irc-1-brackets", "query": "tax imposed on individuals filing status brackets", "source_hint": "irc", "top_k": 5, "options": {"irc_sections_hint": ["1"]}, "expect": {"section_in_top3": "1"}}
+{"id": "tc-170-keywords", "query": "charitable deduction disallowance accuracy penalty 6662", "source_hint": "tax_court", "top_k": 3, "options": {}, "expect": {"case_name_substrings_any": ["Chiarelli"]}}
+{"id": "irs-pub-meta", "query": "qualifying widow filing status", "source_hint": "irs_pubs", "top_k": 3, "options": {"irs_llm_rerank": false}, "expect": {"metadata_publication": "501"}}
+{"id": "response-contract", "query": "standard deduction", "source_hint": "irc", "top_k": 2, "options": {}, "expect": {"response_keys": ["retrieval_empty", "retrieval_message", "chunks", "sources_queried", "strategy"]}}

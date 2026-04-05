@@ -17,6 +17,11 @@ class RetrievalChunkMetadata:
     case_name: Optional[str] = None
     page_index: Optional[int] = None
     subsection: Optional[str] = None
+    # Verification-friendly provenance (optional; see docs/retrieval_interface_spec.md)
+    heading_trail: Optional[str] = None
+    node_id: Optional[str] = None
+    publication: Optional[str] = None
+    source_url: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -39,12 +44,20 @@ class RetrievalResponse:
     chunks: List[RetrievalChunk] = field(default_factory=list)
     strategy: str = "tree"
     sources_queried: List[str] = field(default_factory=list)
+    # When retrieval yields no chunks, set a specific reason (optional; a default is added in to_dict).
+    retrieval_message: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
+        empty = len(self.chunks) == 0
+        msg = self.retrieval_message
+        if empty and not msg:
+            msg = "No retrieval chunks returned for this query."
         return {
             "chunks": [chunk.to_dict() for chunk in self.chunks],
             "strategy": self.strategy,
             "sources_queried": list(self.sources_queried),
+            "retrieval_empty": empty,
+            "retrieval_message": msg if empty else self.retrieval_message,
         }
 
 
