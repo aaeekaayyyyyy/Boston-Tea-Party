@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 from .contracts import (
     ConstraintEngineProtocol,
@@ -9,6 +9,24 @@ from .contracts import (
     UnresolvedConstraint,
 )
 from .intake import merge_fact_updates, normalize_user_facts
+
+
+# Planner → retrieval: IRC section priors aligned with SimpleConstraintEngine rules (Jonathan scenarios).
+RULE_RETRIEVAL_OPTIONS: Dict[str, Dict[str, Any]] = {
+    "filing_status": {
+        "irs_publication": "501",
+        # Order matters for IRC priors: marital-status definition before general filing-status rules.
+        "irc_sections_hint": ["7703", "2", "1", "152"],
+    },
+    "standard_deduction": {
+        "irs_publication": "501",
+        "irc_sections_hint": ["63", "68", "151"],
+    },
+    "deduction_documents": {
+        "irs_publication": "526",
+        "irc_sections_hint": ["170"],
+    },
+}
 
 
 QUESTION_TEMPLATES = {
@@ -98,6 +116,23 @@ class PlanningAgent:
             f"Can you clarify `{constraint.field}`?",
         )
 
+    def _retrieval_options(
+        self,
+        facts: Dict[str, Any],
+        active_rules: Sequence[str],
+        rule_id: str,
+    ) -> Dict[str, Any]:
+        tax_year = facts.get("tax_year")
+        opts: Dict[str, Any] = {
+            "tax_year": tax_year,
+            "active_rules": list(active_rules),
+            "rule_id": rule_id,
+        }
+        extra = RULE_RETRIEVAL_OPTIONS.get(rule_id)
+        if extra:
+            opts.update(extra)
+        return opts
+
     def _build_retrieval_calls(
         self,
         facts: Dict[str, Any],
@@ -105,15 +140,24 @@ class PlanningAgent:
         explanation_goals: List[str],
     ) -> List[Dict[str, Any]]:
         calls: List[Dict[str, Any]] = []
-        tax_year = facts.get("tax_year")
+        ar = list(active_rules)
 
         if "filing_status" in active_rules:
+            q = self._filing_status_query(facts)
             calls.append(
                 {
-                    "query": self._filing_status_query(facts),
+                    "query": q,
                     "source_hint": "irs_pubs",
                     "top_k": 5,
-                    "options": {"tax_year": tax_year},
+                    "options": self._retrieval_options(facts, ar, "filing_status"),
+                }
+            )
+            calls.append(
+                {
+                    "query": q + " 26 USC marital status qualifying child",
+                    "source_hint": "irc",
+                    "top_k": 4,
+                    "options": self._retrieval_options(facts, ar, "filing_status"),
                 }
             )
 
@@ -123,7 +167,15 @@ class PlanningAgent:
                     "query": "When should a taxpayer take the standard deduction instead of itemizing?",
                     "source_hint": "irs_pubs",
                     "top_k": 5,
-                    "options": {"tax_year": tax_year},
+                    "options": self._retrieval_options(facts, ar, "standard_deduction"),
+                }
+            )
+            calls.append(
+                {
+                    "query": "standard deduction amount and limitations Internal Revenue Code",
+                    "source_hint": "irc",
+                    "top_k": 4,
+                    "options": self._retrieval_options(facts, ar, "standard_deduction"),
                 }
             )
 
@@ -133,7 +185,15 @@ class PlanningAgent:
                     "query": "What records are required for charitable contribution deductions?",
                     "source_hint": "irs_pubs",
                     "top_k": 5,
-                    "options": {"tax_year": tax_year},
+                    "options": self._retrieval_options(facts, ar, "deduction_documents"),
+                }
+            )
+            calls.append(
+                {
+                    "query": "charitable contribution substantiation section 170 Tax Court",
+                    "source_hint": "tax_court",
+                    "top_k": 3,
+                    "options": self._retrieval_options(facts, ar, "deduction_documents"),
                 }
             )
 
@@ -145,7 +205,11 @@ class PlanningAgent:
                     "query": goal_text,
                     "source_hint": None,
                     "top_k": 5,
-                    "options": {"tax_year": tax_year},
+                    "options": {
+                        "tax_year": facts.get("tax_year"),
+                        "active_rules": ar,
+                        "rule_id": None,
+                    },
                 }
             )
 

@@ -18,6 +18,8 @@ class SilentMockRetrieval:
             "chunks": [],
             "strategy": "tree" if source_hint != "tax_court" else "bm25",
             "sources_queried": [source_hint] if source_hint else [],
+            "retrieval_empty": True,
+            "retrieval_message": "mock: no chunks",
         }
 
 

@@ -6,6 +6,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from rank_bm25 import BM25Okapi
 
+from .bm25_rank import tokenize_doc
+
 
 class TaxCourtBM25Index:
     """BM25 over a JSONL corpus: one object per line with text, case_name, year, docket."""
@@ -37,16 +39,18 @@ class TaxCourtBM25Index:
                     "case_name": obj.get("case_name", "Unknown"),
                     "year": obj.get("year"),
                     "docket": obj.get("docket"),
+                    "chunk_id": obj.get("chunk_id"),
+                    "source_url": obj.get("source_url"),
                 }
             )
         if self._docs:
-            tokenized = [d.lower().split() for d in self._docs]
+            tokenized = [tokenize_doc(d) for d in self._docs]
             self._bm25 = BM25Okapi(tokenized)
 
     def search(self, query: str, top_k: int) -> List[Tuple[float, str, Dict[str, Any]]]:
         if not self._bm25 or not self._docs:
             return []
-        q_tokens = query.lower().split()
+        q_tokens = tokenize_doc(query)
         if not q_tokens:
             return []
         scores = self._bm25.get_scores(q_tokens)
