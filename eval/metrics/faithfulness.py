@@ -20,7 +20,7 @@ def _get_evaluator_llm():
     # Raise max_tokens well above the default — RAGAS uses instructor internally
     # to parse structured outputs, and the default cap causes finish_reason='length'
     # which makes instructor retry and eventually throw InstructorRetryException.
-    return llm_factory(EVALUATOR_MODEL, client=client, max_tokens=8192)
+    return llm_factory(EVALUATOR_MODEL, client=client, max_tokens=16384)
 
 
 def score_faithfulness(
