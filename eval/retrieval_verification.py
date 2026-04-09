@@ -89,7 +89,7 @@ def run_verification() -> dict:
         sources_queried = resp.get("sources_queried", [])
         requested_year = opts.get("tax_year")
 
-        source_check = check_source_type_consistency(hint, sources_queried)
+        source_check = check_source_type_consistency(hint, sources_queried, chunks)
         year_check = check_tax_year_validation(chunks, requested_year, hint)
         provenance_check = check_provenance_completeness(chunks, hint)
         locators = _compute_locators(chunks)
@@ -144,6 +144,10 @@ def _compute_summary(results: list[dict]) -> dict:
         "total_cases": len(results),
         "cases_run": n,
         "cases_skipped": len(results) - n,
+        # golden_retrieval is intentionally omitted here.
+        # This runner checks source-type, tax-year, and provenance.
+        # Golden retrieval pass/fail comes from the partner golden
+        # test runner (rag_golden_test.py), not from this script.
         "source_type_consistency": {
             "applicable": len(src_applicable),
             "passed": src_passed,
