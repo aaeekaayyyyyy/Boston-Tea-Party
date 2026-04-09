@@ -1,6 +1,11 @@
 """
 Shared helpers for citation normalization, text processing, and matching.
 Used by both citation_nli.py and the harness's citation existence scoring.
+
+Two matching tiers are provided and reported separately:
+  - Section-level (strict): full normalized citation must be a substring.
+  - Source-level (loose):  just the source ID (e.g. 'pub 501') must appear.
+Callers must never silently substitute source-level for section-level.
 """
 import re
 
@@ -33,8 +38,11 @@ def normalize_citation_text(text: str) -> str:
     normalized = text.lower()
     normalized = normalized.replace("\u00c2\u00a7", " section ")
     normalized = normalized.replace("\u00a7", " section ")
-    normalized = re.sub(r"\bi\s*\.?\s*r\s*\.?\s*c\s*\.?\b", " irc ", normalized)
-    normalized = re.sub(r"\b26\s+u\s*\.?\s*s\s*\.?\s*c\s*\.?\b", " irc ", normalized)
+    # Word boundary goes on the last letter 'c', trailing period is optional
+    # outside it.  Old pattern had \b after \.? which fails because period
+    # is non-word and the next char (space) is also non-word.
+    normalized = re.sub(r"\bi\s*\.?\s*r\s*\.?\s*c\b\.?", " irc ", normalized)
+    normalized = re.sub(r"\b26\s+u\s*\.?\s*s\s*\.?\s*c\b\.?", " irc ", normalized)
     normalized = re.sub(r"\bsec(?:tion)?\.?\b", " section ", normalized)
     normalized = re.sub(r"\birs\s+publications?\b", " pub ", normalized)
     normalized = re.sub(r"\birs\s+pub(?:lication)?s?\.?\b", " pub ", normalized)
@@ -45,18 +53,122 @@ def normalize_citation_text(text: str) -> str:
     return normalized
 
 
+def extract_source_id(citation_norm: str) -> str:
+    """Extract the source-level ID (e.g. 'pub 501', 'irc 152') from a
+    normalized citation string.  Used ONLY for the separate source-level
+    metric, never as a substitute for section-level matching."""
+    m = re.match(r"(pub|irc)\s+(\d+)", citation_norm)
+    if m:
+        return f"{m.group(1)} {m.group(2)}"
+    # Tax court: keep full case name
+    m = re.match(r"([a-z]+)\s+v\s+", citation_norm)
+    if m:
+        return citation_norm
+    return citation_norm
+
+
+# -- Token helpers -------------------------------------------------------------
+
+_MIN_TOKEN_LEN = 2  # skip single-char tokens like 'a' to avoid false matches
+
+
+def _significant_tokens(normalized: str) -> set[str]:
+    """Return the set of tokens with length >= _MIN_TOKEN_LEN."""
+    return {t for t in normalized.split() if len(t) >= _MIN_TOKEN_LEN}
+
+
+# -- Section-level matching (strict, token-set containment) --------------------
+#
+# Uses token-set containment: every significant token in the gold citation
+# must appear somewhere in the candidate string.  This handles format
+# differences between benchmark citations ('IRS Pub. 501, Filing Status -
+# Head of Household') and PageIndex citations ('IRS Pub. 501 (2025),
+# Dependents, ... > Filing Status > Head of Household') without loosening
+# the section specificity.  A wrong section (e.g. 'Qualifying Surviving
+# Spouse') will be missing tokens like 'head', 'household' and correctly
+# fail.
+#
+# Year tokens like '2025' in retrieved citations do NOT break the match
+# because containment only requires gold tokens to be present, not that
+# they form a contiguous substring.  Tax-year correctness is validated
+# separately by check_tax_year_validation on chunk metadata.
+
 def citation_in_text(text: str, citation: str) -> bool:
-    """Check whether a citation appears in text after normalization."""
+    """Section-level check: do all significant tokens from the citation
+    appear in the text?"""
     citation_norm = normalize_citation_text(citation)
     if not citation_norm:
         return False
-    return citation_norm in normalize_citation_text(text)
+    gold_tokens = _significant_tokens(citation_norm)
+    if not gold_tokens:
+        return False
+    text_tokens = _significant_tokens(normalize_citation_text(text))
+    return gold_tokens <= text_tokens
 
 
-def find_citations_in_sentence(sentence: str, citations: list[str]) -> list[str]:
-    """Find which required citations are explicitly referenced in a sentence."""
+def _citation_aliases(
+    citation: str,
+    alias_map: dict[str, list[str]] | None,
+) -> list[str]:
+    """Return benchmark citation plus any mapped aliases for sentence matching."""
+    aliases = [citation]
+    if alias_map:
+        aliases.extend(alias_map.get(citation, []) or [])
+    seen = set()
+    unique = []
+    for alias in aliases:
+        if not alias:
+            continue
+        norm = normalize_citation_text(alias)
+        if not norm or norm in seen:
+            continue
+        seen.add(norm)
+        unique.append(alias)
+    return unique
+
+
+def find_citations_in_sentence(
+    sentence: str,
+    citations: list[str],
+    alias_map: dict[str, list[str]] | None = None,
+) -> list[str]:
+    """Section-level: find required citations or mapped aliases in the sentence."""
+    sentence_tokens = _significant_tokens(normalize_citation_text(sentence))
+    found = []
+    for c in citations:
+        for alias in _citation_aliases(c, alias_map):
+            alias_tokens = _significant_tokens(normalize_citation_text(alias))
+            if alias_tokens and alias_tokens <= sentence_tokens:
+                found.append(c)
+                break
+    return found
+
+
+# -- Source-level matching (loose, reported separately) ------------------------
+
+def source_citation_in_text(text: str, citation: str) -> bool:
+    """Loose source-level check: does the source identifier (e.g. 'pub 501')
+    appear in the text?  Reported separately from section-level matching."""
+    citation_norm = normalize_citation_text(citation)
+    if not citation_norm:
+        return False
+    text_norm = normalize_citation_text(text)
+    if citation_norm in text_norm:
+        return True
+    return extract_source_id(citation_norm) in text_norm
+
+
+def find_source_citations_in_sentence(sentence: str, citations: list[str]) -> list[str]:
+    """Loose source-level: find citations whose source ID appears in a sentence."""
     sentence_norm = normalize_citation_text(sentence)
-    return [c for c in citations if normalize_citation_text(c) in sentence_norm]
+    found = []
+    for c in citations:
+        c_norm = normalize_citation_text(c)
+        if c_norm in sentence_norm:
+            found.append(c)
+        elif extract_source_id(c_norm) in sentence_norm:
+            found.append(c)
+    return found
 
 
 # -- Whitespace helpers --------------------------------------------------------
@@ -152,17 +264,23 @@ def is_substantive_claim(cleaned_sentence: str) -> bool:
     return True
 
 
-def is_citation_only(sentence: str, citations: list[str]) -> bool:
+def is_citation_only(
+    sentence: str,
+    citations: list[str],
+    alias_map: dict[str, list[str]] | None = None,
+) -> bool:
     """Return True when the sentence is only citation scaffolding, not a claim."""
-    explicit_citations = find_citations_in_sentence(sentence, citations)
+    explicit_citations = find_citations_in_sentence(sentence, citations, alias_map)
     if not explicit_citations:
         return False
     stripped = sentence
     for citation in explicit_citations:
-        stripped = re.sub(re.escape(citation), " ", stripped, flags=re.IGNORECASE)
+        for alias in _citation_aliases(citation, alias_map):
+            stripped = re.sub(re.escape(alias), " ", stripped, flags=re.IGNORECASE)
     stripped = re.sub(r"[\[\]()]", " ", stripped)
+    stripped = re.sub(r"[*_`]+", " ", stripped)
     stripped = re.sub(
-        r"^\s*(according to|see|under|source|citation)\b[:\s]*",
+        r"^\s*(according to|see|under|source|citation|reference)\b[:\s]*",
         "", stripped, flags=re.IGNORECASE,
     )
     stripped = re.sub(r"\s+", " ", stripped).strip(" .:;-")
