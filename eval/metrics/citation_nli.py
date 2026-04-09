@@ -105,31 +105,58 @@ def _build_blocks(response: str) -> list[list[dict]]:
     return blocks
 
 
-def _block_has_substantive_claim(block: list[dict], citations: list[str]) -> bool:
+def _citation_alias_map(
+    required_citations: list[str],
+    true_source_passages: list[dict],
+) -> dict[str, list[str]]:
+    """Build benchmark-citation aliases from mapped retrieved citations."""
+    alias_map: dict[str, list[str]] = {citation: [] for citation in required_citations}
+    for passage in true_source_passages or []:
+        citation = passage.get("citation")
+        if citation not in alias_map:
+            continue
+        aliases = alias_map[citation]
+        for alias in passage.get("aliases", []) or []:
+            if alias and alias not in aliases:
+                aliases.append(alias)
+    return alias_map
+
+
+def _block_has_substantive_claim(
+    block: list[dict],
+    citations: list[str],
+    alias_map: dict[str, list[str]] | None = None,
+) -> bool:
     """Return True if the block contains at least one substantive claim."""
     for unit in block:
-        if is_citation_only(unit["raw_sentence"], citations):
+        if is_citation_only(unit["raw_sentence"], citations, alias_map):
             continue
         if is_substantive_claim(clean_hypothesis(unit["raw_sentence"])):
             return True
     return False
 
 
-def _block_is_citation_only(block: list[dict], citations: list[str]) -> bool:
+def _block_is_citation_only(
+    block: list[dict],
+    citations: list[str],
+    alias_map: dict[str, list[str]] | None = None,
+) -> bool:
     """Return True if every unit in the block is citation-only scaffolding."""
     if not block:
         return False
     has_explicit = False
     for unit in block:
-        if find_citations_in_sentence(unit["raw_sentence"], citations):
+        if find_citations_in_sentence(unit["raw_sentence"], citations, alias_map):
             has_explicit = True
-        if not is_citation_only(unit["raw_sentence"], citations):
+        if not is_citation_only(unit["raw_sentence"], citations, alias_map):
             return False
     return has_explicit
 
 
 def _attach_citation_only_blocks(
-    blocks: list[list[dict]], citations: list[str]
+    blocks: list[list[dict]],
+    citations: list[str],
+    alias_map: dict[str, list[str]] | None = None,
 ) -> list[list[dict]]:
     """
     Attach citation-only blocks to the nearest adjacent substantive block.
@@ -141,18 +168,18 @@ def _attach_citation_only_blocks(
     skipped: set[int] = set()
 
     for idx, block in enumerate(blocks):
-        if not _block_is_citation_only(block, citations):
+        if not _block_is_citation_only(block, citations, alias_map):
             continue
 
         # Find nearest substantive block (prefer previous)
         prev_target = next(
             (i for i in range(idx - 1, -1, -1)
-             if _block_has_substantive_claim(blocks[i], citations)),
+             if _block_has_substantive_claim(blocks[i], citations, alias_map)),
             None,
         )
         next_target = next(
             (i for i in range(idx + 1, len(blocks))
-             if _block_has_substantive_claim(blocks[i], citations)),
+             if _block_has_substantive_claim(blocks[i], citations, alias_map)),
             None,
         )
         target = prev_target if prev_target is not None else next_target
@@ -203,9 +230,10 @@ def score_citation_f1(
         normalize_citation_text(p["citation"]): p["text"]
         for p in true_source_passages
     }
+    citation_aliases = _citation_alias_map(required_citations, true_source_passages)
 
     blocks = _attach_citation_only_blocks(
-        _build_blocks(response), required_citations
+        _build_blocks(response), required_citations, citation_aliases
     )
 
     details = []
@@ -223,10 +251,10 @@ def score_citation_f1(
         for unit_index, unit in enumerate(block_units):
             raw = unit["raw_sentence"]
             cleaned = clean_hypothesis(raw)
-            cit_only = is_citation_only(raw, required_citations)
+            cit_only = is_citation_only(raw, required_citations, citation_aliases)
             citation_required = is_substantive_claim(cleaned) and not cit_only
 
-            explicit_found = find_citations_in_sentence(raw, required_citations)
+            explicit_found = find_citations_in_sentence(raw, required_citations, citation_aliases)
             explicit_mapped = [
                 c for c in explicit_found
                 if normalize_citation_text(c) in passage_lookup

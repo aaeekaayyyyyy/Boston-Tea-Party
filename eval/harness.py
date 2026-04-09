@@ -1,4 +1,4 @@
-"""
+﻿"""
 Main eval harness. Orchestrates:
 1. Load benchmark scenarios
 2. Run baselines (A and B)
@@ -19,12 +19,15 @@ from pathlib import Path
 
 from eval.config import RESULTS_DIR, THRESHOLDS
 from eval.loader import load_all_scenarios
-from eval.metrics.citation_utils import citation_in_text
-from eval.metrics.retrieval_metrics import mrr, precision_at_k
+from eval.metrics.citation_utils import citation_in_text, source_citation_in_text
+from eval.metrics.retrieval_metrics import (
+    mrr, precision_at_k, source_mrr, source_precision_at_k,
+)
 from eval.system_adapter import adapt_system_output
 
 
 _answer_correctness_client = None
+_LETTUCEDETECT_MAX_TOKENS = 8192
 
 
 def _get_answer_correctness_client():
@@ -37,6 +40,30 @@ def _get_answer_correctness_client():
         api_key = os.environ.get("GEMINI_API_KEY", "")
         _answer_correctness_client = OpenAI(api_key=api_key, base_url=EVALUATOR_BASE_URL)
     return _answer_correctness_client
+
+
+def _estimate_lettucedetect_tokens(contexts: list[str], question: str, answer: str) -> int:
+    """Conservative token estimate used to avoid overlength LettuceDetect calls."""
+    text = "\n".join((contexts or []) + [question, answer])
+    word_estimate = len(text.split())
+    char_estimate = (len(text) + 3) // 4
+    return max(word_estimate, char_estimate)
+
+
+def _truncate_lettucedetect_contexts(
+    contexts: list[str],
+    question: str,
+    answer: str,
+    max_tokens: int = _LETTUCEDETECT_MAX_TOKENS,
+) -> tuple[list[str], int]:
+    """Keep full question+answer and trim contexts in order to fit the token budget."""
+    kept = []
+    for context in contexts or []:
+        candidate = kept + [context]
+        if _estimate_lettucedetect_tokens(candidate, question, answer) > max_tokens:
+            break
+        kept.append(context)
+    return kept, _estimate_lettucedetect_tokens(kept, question, answer)
 
 
 def score_answer_correctness(question: str, true_answer: str, response: str) -> bool:
@@ -57,10 +84,19 @@ def score_answer_correctness(question: str, true_answer: str, response: str) -> 
 
 
 def score_citation_existence(response: str, required_citations: list[str]) -> float | None:
-    """Score the fraction of required citations that appear in the response."""
+    """Strict section-level: fraction of required citations found in response."""
     if not required_citations:
         return None
     matched = sum(1 for citation in required_citations if citation_in_text(response, citation))
+    return matched / len(required_citations)
+
+
+def score_source_citation_existence(response: str, required_citations: list[str]) -> float | None:
+    """Loose source-level: fraction of required source IDs found in response.
+    Reported separately from section-level to avoid inflating precision."""
+    if not required_citations:
+        return None
+    matched = sum(1 for citation in required_citations if source_citation_in_text(response, citation))
     return matched / len(required_citations)
 
 
@@ -74,6 +110,8 @@ def _score_grounded_response(
     required_citations: list[str],
     citation_passages: list[dict],
     hhem_only: bool = False,
+    enable_citation_f1: bool = True,
+    citation_f1_skip_reason: str | None = None,
 ) -> dict:
     """Score a single grounded response using the existing answer-based metrics."""
     scores = {
@@ -83,11 +121,44 @@ def _score_grounded_response(
 
     if contexts:
         try:
-            from eval.metrics.lettucedetect_metric import score_lettucedetect
+            token_estimate = _estimate_lettucedetect_tokens(contexts, question, response)
+            scoring_contexts = contexts
+            if token_estimate > _LETTUCEDETECT_MAX_TOKENS:
+                scoring_contexts, truncated_estimate = _truncate_lettucedetect_contexts(
+                    contexts,
+                    question,
+                    response,
+                )
+                if not scoring_contexts:
+                    scores["hallucination_skipped"] = True
+                    scores["hallucination_skip_reason"] = (
+                        "Input exceeds LettuceDetect context window, and no context passages fit after truncation."
+                    )
+                    scores["hallucination_estimated_tokens"] = token_estimate
+                else:
+                    from eval.metrics.lettucedetect_metric import score_lettucedetect
 
-            ld = score_lettucedetect(contexts=contexts, question=question, answer=response)
-            scores["hallucination_rate"] = ld["hallucination_rate"]
-            scores["hallucinated_spans"] = ld["hallucinated_spans"]
+                    ld = score_lettucedetect(
+                        contexts=scoring_contexts,
+                        question=question,
+                        answer=response,
+                    )
+                    scores["hallucination_rate"] = ld["hallucination_rate"]
+                    scores["hallucinated_spans"] = ld["hallucinated_spans"]
+                    scores["hallucination_truncated"] = True
+                    scores["hallucination_original_context_count"] = len(contexts)
+                    scores["hallucination_truncated_context_count"] = len(scoring_contexts)
+                    scores["hallucination_estimated_tokens"] = token_estimate
+                    scores["hallucination_truncated_estimated_tokens"] = truncated_estimate
+                    scores["hallucination_truncation_reason"] = (
+                        "Input exceeded LettuceDetect context window; scored on truncated context."
+                    )
+            else:
+                from eval.metrics.lettucedetect_metric import score_lettucedetect
+
+                ld = score_lettucedetect(contexts=scoring_contexts, question=question, answer=response)
+                scores["hallucination_rate"] = ld["hallucination_rate"]
+                scores["hallucinated_spans"] = ld["hallucinated_spans"]
         except Exception as e:
             scores["hallucination_rate"] = 1.0
             scores["hallucinated_spans"] = []
@@ -107,7 +178,17 @@ def _score_grounded_response(
     if cite_exist is not None:
         scores["citation_existence"] = cite_exist
 
-    if required_citations and citation_passages:
+    source_cite_exist = score_source_citation_existence(response, required_citations)
+    if source_cite_exist is not None:
+        scores["source_citation_existence"] = source_cite_exist
+
+    if not enable_citation_f1:
+        scores["citation_metrics_skipped"] = True
+        scores["citation_metrics_skip_reason"] = (
+            citation_f1_skip_reason
+            or "Retrieved citations are not yet mapped to benchmark citation targets."
+        )
+    elif required_citations and citation_passages:
         try:
             from eval.metrics.citation_nli import score_citation_f1
 
@@ -242,6 +323,9 @@ def evaluate_system_results(
                 "gold_constraint": adapted["gold_constraint"],
                 "strategy_metadata": adapted["strategy_metadata"],
                 "retrieved_citation_lists": adapted["retrieved_citation_lists"],
+                "citation_mapping_applied": adapted["citation_mapping_applied"],
+                "citation_mapping_details": adapted["citation_mapping_details"],
+                "unmapped_required_citations": adapted["unmapped_required_citations"],
             },
         }
 
@@ -256,8 +340,12 @@ def evaluate_system_results(
                     response=response,
                     contexts=adapted["contexts"],
                     required_citations=adapted["required_citations"],
-                    citation_passages=adapted["citation_passages"],
+                    citation_passages=adapted["mapped_citation_passages"],
                     hhem_only=hhem_only,
+                    enable_citation_f1=adapted["citation_mapping_applied"],
+                    citation_f1_skip_reason=(
+                        "No retrieved citations could be mapped to benchmark citation targets."
+                    ),
                 )
             )
         else:
@@ -272,6 +360,13 @@ def evaluate_system_results(
                 5,
             )
             system_scores["mrr"] = mrr(retrieved_lists[0], adapted["required_citations"])
+            # Source-level (loose) retrieval metrics, reported separately
+            system_scores["source_precision_at_5"] = source_precision_at_k(
+                retrieved_lists[0],
+                adapted["required_citations"],
+                5,
+            )
+            system_scores["source_mrr"] = source_mrr(retrieved_lists[0], adapted["required_citations"])
         elif len(retrieved_lists) > 1:
             system_scores["retrieval_metrics_skipped"] = True
             system_scores["retrieval_metrics_skip_reason"] = (
@@ -369,15 +464,22 @@ def summarize_system(scored: list[dict]) -> dict:
         ("hallucination_rate", "system_avg_hallucination_rate"),
         ("faithfulness", "system_avg_faithfulness"),
         ("citation_existence", "system_avg_citation_existence"),
+        ("source_citation_existence", "system_avg_source_citation_existence"),
         ("citation_f1", "system_avg_citation_f1"),
         ("citation_recall", "system_avg_citation_recall"),
         ("citation_precision", "system_avg_citation_precision"),
         ("precision_at_5", "system_avg_precision_at_5"),
         ("mrr", "system_avg_mrr"),
+        ("source_precision_at_5", "system_avg_source_precision_at_5"),
+        ("source_mrr", "system_avg_source_mrr"),
     ]:
         values = [entry[key] for entry in system_entries if key in entry]
         if values:
             summary[summary_key] = sum(values) / len(values)
+
+    summary["system_hallucination_truncated_cases"] = sum(
+        1 for entry in system_entries if entry.get("hallucination_truncated")
+    )
 
     if summary["system_accuracy"] is not None:
         summary["system_accuracy_pass"] = summary["system_accuracy"] >= THRESHOLDS["answer_correctness"]
@@ -405,20 +507,100 @@ def save_results(scored: list[dict], summary: dict):
     print(f"\nResults saved to {out_path}")
 
 
+
+# -- Pipeline mode: retrieve + generate + score in one pass --------------------
+
+
+def _pick_source_hint(scenario: dict) -> str | None:
+    """Infer source_hint from the scenario's source_type field."""
+    st = scenario.get("source_type", "")
+    if st == "irc":
+        return "irc"
+    if st in ("irs_pubs", "irs_pub"):
+        return "irs_pubs"
+    if st == "tax_court":
+        return "tax_court"
+    return None
+
+
+def run_pipeline(scenarios: list[dict], top_k: int = 5) -> list[dict]:
+    """Run the RAG pipeline (retrieve + LLM) for each scenario.
+
+    Uses the same system prompt as Baseline B so the comparison is
+    apples-to-apples.  Returns results in the same format as
+    load_system_results() so evaluate_system_results() can score them.
+    """
+    import os
+    from openai import OpenAI
+    from eval.baselines import CONTEXT_SYSTEM
+    from eval.config import SYSTEM_MODEL, SYSTEM_BASE_URL, REPO_ROOT
+    from src.rag.client import HybridRetrievalClient
+
+    api_key = os.environ.get("GEMINI_API_KEY", "")
+    llm = OpenAI(api_key=api_key, base_url=SYSTEM_BASE_URL)
+    retrieval_client = HybridRetrievalClient(repo_root=REPO_ROOT)
+
+    results = []
+    for s in scenarios:
+        sid = s["id"]
+        question = s["question"]
+        hint = _pick_source_hint(s)
+
+        print(f"  {sid}: retrieving (hint={hint})...", end="", flush=True)
+        resp = retrieval_client.retrieve(query=question, source_hint=hint, top_k=top_k)
+        chunks = resp.get("chunks", [])
+        print(f" {len(chunks)} chunks", end="", flush=True)
+
+        if chunks:
+            context_block = "\n\n".join(
+                f"[{c['metadata']['citation']}]\n{c['text']}" for c in chunks
+            )
+            llm_result = llm.chat.completions.create(
+                model=SYSTEM_MODEL,
+                messages=[
+                    {"role": "system", "content": CONTEXT_SYSTEM},
+                    {"role": "user", "content": f"Source documents:\n{context_block}\n\nQuestion: {question}"},
+                ],
+                temperature=0,
+                max_tokens=4096,
+            )
+            response_text = llm_result.choices[0].message.content.strip()
+        else:
+            response_text = ""
+        print(f" -> {len(response_text)} chars")
+
+        results.append({
+            "id": sid,
+            "system_output": {
+                "action": "retrieve",
+                "retrieval_calls": [{"query": question, "source_hint": hint, "top_k": top_k}],
+                "retrieval_results": [resp],
+                "constraint_result": {},
+            },
+            "response": response_text,
+        })
+
+    return results
+
+
 def main():
     """Run the eval harness CLI."""
     parser = argparse.ArgumentParser(description="Boston Tea Party 2.0 eval harness")
     parser.add_argument(
         "--hhem-only",
         action="store_true",
-        help="Legacy compatibility flag: skip faithfulness/API calls and run local-only metrics",
+        help="Legacy: skip faithfulness/API calls, run local-only metrics",
     )
-    parser.add_argument("--dry-run", action="store_true", help="Load scenarios only, skip LLM calls")
+    parser.add_argument("--dry-run", action="store_true", help="Load scenarios only")
     parser.add_argument(
-        "--system-results",
-        type=Path,
-        help="Path to a JSON array of precomputed system outputs",
+        "--system-results", type=Path,
+        help="Score precomputed system outputs from a JSON file",
     )
+    parser.add_argument(
+        "--pipeline", action="store_true",
+        help="Run RAG pipeline end-to-end: retrieve, generate, then score",
+    )
+    parser.add_argument("--top-k", type=int, default=5, help="Chunks to retrieve (pipeline mode)")
     args = parser.parse_args()
 
     all_scenarios = load_all_scenarios()
@@ -426,33 +608,50 @@ def main():
         print("No scenarios found. Add JSON files to benchmarks/")
         return
 
+    BASELINE_TYPES = {"factual_lookup", "eligibility_determination", "calculation", None}
+
     if args.system_results:
         system_results = load_system_results(args.system_results)
         print(f"Loaded {len(system_results)} precomputed system results from {args.system_results.name}")
         if args.dry_run:
-            print("Dry run complete. Scenarios and system results loaded successfully.")
+            print("Dry run complete.")
             return
-
-        scored = evaluate_system_results(all_scenarios, system_results, hhem_only=args.hhem_only)
+        scored = evaluate_system_results(scenarios, system_results, hhem_only=args.hhem_only)
         summary = summarize_system(scored)
         save_results(scored, summary)
         return
 
-    # Filter to question types the baseline scoring path supports.
-    # Planning scenarios test agent behavior, not answer quality.
-    BASELINE_QUESTION_TYPES = {"factual_lookup", "eligibility_determination", "calculation", None}
-    scenarios = [
-        s for s in all_scenarios
-        if s.get("question_type") in BASELINE_QUESTION_TYPES
-    ]
+    if args.pipeline:
+        scenarios = [s for s in all_scenarios if s.get("question_type") in BASELINE_TYPES]
+        skipped = len(all_scenarios) - len(scenarios)
+        if skipped:
+            print(f"Filtered to {len(scenarios)} scenarios (skipped {skipped} planning/other)")
+        if args.dry_run:
+            print("Dry run complete.")
+            return
+        print("\n--- RAG Pipeline: retrieve + generate ---")
+        system_results = run_pipeline(scenarios, top_k=args.top_k)
+        # Save raw outputs for reproducibility
+        from datetime import datetime as _dt
+        raw_path = RESULTS_DIR / f"system_outputs_{_dt.now().strftime('%Y%m%d_%H%M%S')}.json"
+        RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+        with open(raw_path, "w", encoding="utf-8") as f:
+            json.dump(system_results, f, indent=2, default=str)
+        print(f"Raw outputs saved to {raw_path}")
+        print("\n--- Scoring ---")
+        scored = evaluate_system_results(scenarios, system_results, hhem_only=args.hhem_only)
+        summary = summarize_system(scored)
+        save_results(scored, summary)
+        return
+
+    # Default: run baselines
+    scenarios = [s for s in all_scenarios if s.get("question_type") in BASELINE_TYPES]
     skipped = len(all_scenarios) - len(scenarios)
     if skipped:
         print(f"Filtered to {len(scenarios)} baseline-scorable scenarios (skipped {skipped} planning/other)")
-
     if args.dry_run:
-        print("Dry run complete. Scenarios loaded successfully.")
+        print("Dry run complete.")
         return
-
     scored = evaluate_baselines(scenarios, hhem_only=args.hhem_only)
     summary = summarize(scored)
     save_results(scored, summary)
