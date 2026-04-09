@@ -25,6 +25,11 @@
     "can_be_claimed_as_dependent_by_someone_else": {"type": ["boolean", "null"]},
     "temporary_absence_only": {"type": ["boolean", "null"]},
     "spouse_willing_to_file_jointly": {"type": ["boolean", "null"]}, 
-    "spouse_itemizes_if_mfs": {"type": ["boolean", "null"]}
+    "spouse_itemizes_if_mfs": {"type": ["boolean", "null"]},
+    "federal_tax_residency": {"type": ["string", "null"]},
+    "is_student_in_us": {"type": ["boolean", "null"]},
+    "us_student_visa_f1_j1_m": {"type": ["boolean", "null"]},
+    "primary_state_of_residence": {"type": ["string", "null"]},
+    "income_below_us_filing_threshold": {"type": ["boolean", "null"]}
 
 }

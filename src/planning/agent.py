@@ -26,7 +26,27 @@ RULE_RETRIEVAL_OPTIONS: Dict[str, Dict[str, Any]] = {
         "irs_publication": "526",
         "irc_sections_hint": ["170"],
     },
+    "nonresident_student": {
+        "irs_publication": "519",
+        "irc_sections_hint": ["7701", "871", "873"],
+    },
 }
+
+
+def _should_retrieve_pub519(facts: Dict[str, Any]) -> bool:
+    """Extra retrieval when student / NRA context—8843 and Pub. 519."""
+    res = facts.get("federal_tax_residency")
+    if isinstance(res, str):
+        res = res.strip().lower().replace(" ", "_")
+    stu = facts.get("is_student_in_us")
+    visa = facts.get("us_student_visa_f1_j1_m")
+    if res == "nonresident_alien" and (stu is True or visa is True):
+        return True
+    if visa is True:
+        return True
+    if stu is True and res in (None, "", "unsure"):
+        return True
+    return False
 
 
 QUESTION_TEMPLATES = {
@@ -142,6 +162,19 @@ class PlanningAgent:
         calls: List[Dict[str, Any]] = []
         ar = list(active_rules)
 
+        if _should_retrieve_pub519(facts):
+            calls.append(
+                {
+                    "query": (
+                        "IRS Publication 519 nonresident alien student Form 8843 exempt individual "
+                        "substantial presence F-1 J-1 filing requirement"
+                    ),
+                    "source_hint": "irs_pubs",
+                    "top_k": 5,
+                    "options": self._retrieval_options(facts, ar, "nonresident_student"),
+                }
+            )
+
         if "filing_status" in active_rules:
             q = self._filing_status_query(facts)
             calls.append(
@@ -228,6 +261,9 @@ class PlanningAgent:
             return "What are the filing status options for a married taxpayer?"
 
         if marital_status in {"single", "divorced", "legally_separated", "widowed"}:
-            return "What are the filing status rules for a single taxpayer?"
+            return (
+                "IRS Publication 501 filing status rules for single unmarried taxpayer "
+                "head of household qualifying surviving spouse"
+            )
 
         return "What filing status rules apply in this scenario?"

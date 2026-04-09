@@ -39,6 +39,10 @@ def normalize_user_facts(facts: Dict[str, Any]) -> Dict[str, Any]:
     if isinstance(marital_status, str):
         normalized["marital_status_on_1231"] = marital_status.strip().lower()
 
+    fed = normalized.get("federal_tax_residency")
+    if isinstance(fed, str):
+        normalized["federal_tax_residency"] = fed.strip().lower().replace(" ", "_")
+
     return normalized
 
 
