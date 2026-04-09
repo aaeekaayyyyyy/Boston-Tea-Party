@@ -25,6 +25,43 @@ spouse_willing_to_file_jointly:
   source: user_input
   schema_ref: data/users/schema.json
 
+# --- Federal tax residency & students (Pub. 519 / Form 8843 context) ---
+# Not the same as immigration status; drives whether 1040 resident rules vs. nonresident rules apply.
+federal_tax_residency:
+  description: Federal income tax residency (U.S. citizen or resident alien vs nonresident alien)
+  type: string
+  enum:
+    - us_citizen_or_national
+    - us_resident_alien
+    - nonresident_alien
+    - unsure
+  nullable: true
+  source: user_input
+
+is_student_in_us:
+  description: Enrolled or present in the United States as a student for any part of the tax year
+  type: boolean
+  nullable: true
+  source: user_input
+
+us_student_visa_f1_j1_m:
+  description: In the U.S. chiefly under F-1, J-1, M-1, or similar student or exchange visitor status
+  type: boolean
+  nullable: true
+  source: user_input
+
+primary_state_of_residence:
+  description: U.S. state where the taxpayer lived most of the year (e.g. MA)
+  type: string
+  nullable: true
+  source: user_input
+
+income_below_us_filing_threshold:
+  description: No gross income or income below the IRS filing threshold so no Form 1040 is required
+  type: boolean
+  nullable: true
+  source: user_input
+
 eligible_for_qss:
   description: Eligible for Qualifying Surviving Spouse status
   type: boolean

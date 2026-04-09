@@ -1,0 +1,33 @@
+:root {
+  --cream: #f2e8d5;
+  --ink: #1a1410;
+  --ink-muted: #3d3530;
+  --accent: #4a3f36;
+  --rule: rgba(26, 20, 16, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 1.125rem;
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--cream);
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+code {
+  font-size: 0.9em;
+  background: rgba(0, 0, 0, 0.06);
+  padding: 0.1em 0.25em;
+}

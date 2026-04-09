@@ -114,16 +114,28 @@ class SimpleConstraintEngine:
             ) or has_any_charitable_contribution(facts)
 
             if has_itemized_signals and itemized_total is None:
-                unresolved.append(
-                    UnresolvedConstraint(
-                        constraint_id="C-DED-001",
-                        field="itemized_deductions_total",
-                        reason="We need a rough itemized deduction total to compare itemizing against the standard deduction.",
-                        priority=6,
-                        question_hint="Do you know the rough total of your itemized deductions for the year?",
-                        source_hint="irs_pubs",
+                if facts.get("mortgage_interest_paid") is None:
+                    unresolved.append(
+                        UnresolvedConstraint(
+                            constraint_id="C-DED-000",
+                            field="mortgage_interest_paid",
+                            reason="Mortgage interest is a common reason to itemize; knowing if you paid any sharpens the deduction story.",
+                            priority=5,
+                            question_hint="Did you pay any home mortgage interest during the year?",
+                            source_hint="irs_pubs",
+                        )
                     )
-                )
+                else:
+                    unresolved.append(
+                        UnresolvedConstraint(
+                            constraint_id="C-DED-001",
+                            field="itemized_deductions_total",
+                            reason="We need a rough itemized deduction total to compare itemizing against the standard deduction.",
+                            priority=6,
+                            question_hint="Do you know the rough total of your itemized deductions for the year?",
+                            source_hint="irs_pubs",
+                        )
+                    )
 
         explanation_goals.append("Explain whether standard deduction or itemizing looks more likely.")
 

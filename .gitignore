@@ -22,6 +22,9 @@ Thumbs.db
 # Environment
 .env
 
+# Node (React demo UI)
+frontend/node_modules/
+
 # Project-specific
 *.pdf
 *.log
