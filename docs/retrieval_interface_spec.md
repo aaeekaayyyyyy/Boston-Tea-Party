@@ -36,6 +36,8 @@ The planning agent calls the retrieval layer with:
 | `rule_id` | string or null | all | Primary rule driving this retrieval call (e.g. `"filing_status"`). |
 | `irs_llm_rerank` | bool | `irs_pubs` | If `true` (default when unset and `OPENAI_API_KEY` is set), BM25 shortlists ~18 nodes then an LLM picks final `node_id`s. Set `false` for deterministic eval. Disable globally with env `DISABLE_IRS_LLM_RERANK=1`. |
 | `irs_bm25_shortlist` | int | `irs_pubs` | Shortlist size before LLM pick (default 18, max 40). |
+| `irs_flat_bm25` | bool | `irs_pubs` | If `true`, rank nodes using **body text only** (no title/trail in the BM25 document, no title/trail boost, no shallow-depth penalty). For eval baselines; default `false` (tree-style retrieval). |
+| `irs_joint_refusal_augmentation` | bool | `irs_pubs` | If `true` (default), expand the BM25 query and lightly boost the **Married Filing Separately** section when the question implies a spouse who will not file jointly. Set `false` to reproduce pre-fix lexical behavior in tests. |
 
 ---
 

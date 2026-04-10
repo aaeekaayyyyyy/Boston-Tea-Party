@@ -40,6 +40,42 @@ def flatten_pageindex_tree(
     return out
 
 
+def _irs_bm25_query_augmentation(query: str) -> Tuple[str, bool]:
+    """
+    When the user describes a spouse who will not file jointly, BM25 often ranks the
+    long "Married Filing Jointly" section above "Married Filing Separately" because
+    the question repeats joint/spouse terms and omits "separately". Add lexical hooks
+    and (when this fires) allow a small title-level preference for the MFS section.
+    """
+    q = query.lower()
+    mentions_joint = "joint" in q or "jointly" in q
+    mentions_partner = any(
+        w in q for w in ("spouse", "married", "husband", "wife", "couple")
+    )
+    mentions_conflict = any(
+        frag in q
+        for frag in (
+            "refus",
+            "disagree",
+            "won't",
+            "wont",
+            "will not",
+            "not agree",
+            "don't agree",
+            "doesn't agree",
+            "without agreeing",
+        )
+    )
+    if (
+        mentions_joint
+        and mentions_partner
+        and mentions_conflict
+        and "separately" not in q
+    ):
+        return f"{query} married filing separately", True
+    return query, False
+
+
 def load_tree_from_cache(path: Path) -> Optional[List[Dict[str, Any]]]:
     if not path.exists():
         return None
@@ -228,18 +264,34 @@ class IRSPublicationRetriever:
         shortlist_n = max(shortlist_n, top_k + 3)
         shortlist_n = min(shortlist_n, 40)
 
-        docs = [f"{r['title']} {r['trail']} {r['text']}" for r in rows]
+        use_augmentation = opts.get("irs_joint_refusal_augmentation", True) is not False
+        if use_augmentation:
+            bm25_query, boost_mfs_title = _irs_bm25_query_augmentation(query)
+        else:
+            bm25_query, boost_mfs_title = query, False
+
+        flat_mode = bool(opts.get("irs_flat_bm25"))
+        if flat_mode:
+            docs = [(r.get("text") or "").strip() for r in rows]
+        else:
+            docs = [f"{r['title']} {r['trail']} {r['text']}" for r in rows]
         ranker = BM25Ranker(docs)
         pool = max(shortlist_n * 3, shortlist_n + 12, len(rows))
-        hits = ranker.search(query, min(pool, len(rows)))
+        hits = ranker.search(bm25_query, min(pool, len(rows)))
         titles = [r["title"] for r in rows]
         trails = [r["trail"] for r in rows]
-        hits = apply_title_trail_boost(query, hits, titles, trails, boost=1.4)
+        if not flat_mode:
+            hits = apply_title_trail_boost(bm25_query, hits, titles, trails, boost=1.4)
 
         adjusted: List[Tuple[int, float]] = []
         for i, sc in hits:
-            pen = self._shallow_penalty(rows[i])
-            adjusted.append((i, sc * pen))
+            pen = 1.0 if flat_mode else self._shallow_penalty(rows[i])
+            sc_adj = sc * pen
+            if boost_mfs_title:
+                title_l = (rows[i].get("title") or "").strip().lower()
+                if title_l == "married filing separately":
+                    sc_adj *= 2.2
+            adjusted.append((i, sc_adj))
         adjusted.sort(key=lambda t: t[1], reverse=True)
 
         shortlist_rows: List[Dict[str, Any]] = []
