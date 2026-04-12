@@ -29,3 +29,5 @@ frontend/node_modules/
 *.pdf
 *.log
 eval/results/
+eval/figures/
+generate_final_figures.py.bak*

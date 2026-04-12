@@ -1,0 +1,566 @@
+[
+    {
+        "id": "FS-QSS-01",
+        "question": "Can a taxpayer whose spouse died in 2024, who has not remarried, has a dependent child living with them, and paid more than half the cost of keeping up the home file as qualifying surviving spouse in 2025?",
+        "answer": "Yes. A taxpayer may file as qualifying surviving spouse if the spouse died in 2023 or 2024, they did not remarry, they have a qualifying child or stepchild who is a dependent, the child lived in the home all year, and they paid more than half the cost of keeping up the home.",
+        "required_citations": [
+            "IRS Pub. 501, Filing Status - Qualifying Surviving Spouse"
+        ],
+        "constraint_result": {
+            "eligible": true,
+            "conditions_met": [
+                "spouse_died_in_prior_two_years",
+                "not_remarried",
+                "has_dependent_child",
+                "child_lived_in_home",
+                "paid_more_than_half_home_costs"
+            ]
+        },
+        "true_source_passages": [
+            {
+                "citation": "IRS Pub. 501, Filing Status - Qualifying Surviving Spouse",
+                "text": "You may be eligible to use qualifying surviving spouse as your filing status for 2 years following the year your spouse died. This filing status entitles you to use joint return tax rates and the highest standard deduction amount. You are eligible if you were entitled to file a joint return with your spouse for the year your spouse died, your spouse died in 2023 or 2024 and you didn't remarry before the end of 2025, you have a child or stepchild whom you can claim as a dependent, this child lived in your home all year, and you paid more than half the cost of keeping up a home for the year."
+            }
+        ],
+        "question_type": "eligibility_determination",
+        "source_type": "irs_pubs",
+        "difficulty": "medium",
+        "component_tested": [
+            "constraint_engine",
+            "generation"
+        ],
+        "source_case_id": "QSS_01",
+        "source_benchmark_file": "src/benchmarks/filing_status_cases.json"
+    },
+    {
+        "id": "FS-QSS-NEG-01",
+        "question": "Can a taxpayer whose spouse died in 2022 file as qualifying surviving spouse in 2025?",
+        "answer": "No. The qualifying surviving spouse status is available only for 2 years following the year the spouse died. If the spouse died in 2022, the taxpayer could have used this status for 2023 and 2024, but not for 2025.",
+        "required_citations": [
+            "IRS Pub. 501, Filing Status - Qualifying Surviving Spouse"
+        ],
+        "constraint_result": {
+            "eligible": false,
+            "conditions_failed": [
+                "spouse_died_in_prior_two_years"
+            ]
+        },
+        "true_source_passages": [
+            {
+                "citation": "IRS Pub. 501, Filing Status - Qualifying Surviving Spouse",
+                "text": "You may be eligible to use qualifying surviving spouse as your filing status for 2 years following the year your spouse died. For example, if your spouse died in 2024 and you haven't remarried, you may be able to use this filing status for 2025 and 2026. The filing status qualifying surviving spouse is available for only 2 years following the year your spouse died."
+            }
+        ],
+        "question_type": "eligibility_determination",
+        "source_type": "irs_pubs",
+        "difficulty": "medium",
+        "component_tested": [
+            "constraint_engine",
+            "generation"
+        ]
+    },
+    {
+        "id": "DED-STD-SINGLE-01",
+        "question": "What is the standard deduction amount for a single filer under age 65 who is not blind for tax year 2025?",
+        "answer": "The standard deduction for a single filer under 65 who is not blind is $15,000 for 2025.",
+        "required_citations": [
+            "IRS Pub. 501, Standard Deduction"
+        ],
+        "constraint_result": {
+            "eligible": true,
+            "conditions_met": [
+                "filing_status_single",
+                "standard_deduction_applies"
+            ]
+        },
+        "true_source_passages": [
+            {
+                "citation": "IRS Pub. 501, Standard Deduction",
+                "text": "The standard deduction is a specific dollar amount that reduces the amount of income on which you're taxed. The standard deduction amounts for 2025 are: Single or Married filing separately $15,000; Married filing jointly or Qualifying surviving spouse $30,000; Head of household $22,500."
+            }
+        ],
+        "question_type": "factual_lookup",
+        "source_type": "irs_pubs",
+        "difficulty": "easy",
+        "component_tested": [
+            "generation"
+        ],
+        "source_case_id": "STD_SINGLE_01",
+        "source_benchmark_file": "src/benchmarks/deduction_cases.json"
+    },
+    {
+        "id": "DED-STD-MFJ-01",
+        "question": "What is the standard deduction for a married couple filing jointly in 2025 if both are under 65?",
+        "answer": "The standard deduction for married filing jointly is $30,000 for 2025.",
+        "required_citations": [
+            "IRS Pub. 501, Standard Deduction"
+        ],
+        "constraint_result": {
+            "eligible": true,
+            "conditions_met": [
+                "filing_status_mfj",
+                "standard_deduction_applies"
+            ]
+        },
+        "true_source_passages": [
+            {
+                "citation": "IRS Pub. 501, Standard Deduction",
+                "text": "The standard deduction is a specific dollar amount that reduces the amount of income on which you're taxed. The standard deduction amounts for 2025 are: Single or Married filing separately $15,000; Married filing jointly or Qualifying surviving spouse $30,000; Head of household $22,500."
+            }
+        ],
+        "question_type": "factual_lookup",
+        "source_type": "irs_pubs",
+        "difficulty": "easy",
+        "component_tested": [
+            "generation"
+        ],
+        "source_case_id": "STD_MFJ_01",
+        "source_benchmark_file": "src/benchmarks/deduction_cases.json"
+    },
+    {
+        "id": "DED-STD-AGE65-01",
+        "question": "Does a single filer who is 65 or older get a higher standard deduction?",
+        "answer": "Yes. If you are 65 or older, you get an additional standard deduction amount on top of the basic standard deduction. For a single filer or head of household, the additional amount is $2,000 for 2025.",
+        "required_citations": [
+            "IRS Pub. 501, Standard Deduction - Higher Standard Deduction for Age (65 or Older)"
+        ],
+        "constraint_result": {
+            "eligible": true,
+            "conditions_met": [
+                "age_65_or_older",
+                "additional_standard_deduction"
+            ]
+        },
+        "true_source_passages": [
+            {
+                "citation": "IRS Pub. 501, Standard Deduction - Higher Standard Deduction for Age (65 or Older)",
+                "text": "If you are age 65 or older on the last day of the year and you don't itemize deductions, you are entitled to a higher standard deduction. You are considered 65 on the day before your 65th birthday. The additional standard deduction amount for 2025 is $2,000 for single or head of household, or $1,600 for each qualifying individual who is married filing jointly, married filing separately, or a qualifying surviving spouse."
+            }
+        ],
+        "question_type": "factual_lookup",
+        "source_type": "irs_pubs",
+        "difficulty": "medium",
+        "component_tested": [
+            "constraint_engine",
+            "generation"
+        ],
+        "source_case_id": "STD_65_BLIND_01",
+        "source_benchmark_file": "src/benchmarks/deduction_cases.json"
+    },
+    {
+        "id": "DED-STD-BLIND-01",
+        "question": "Can a taxpayer who is legally blind claim an additional standard deduction?",
+        "answer": "Yes. A taxpayer who is legally blind gets an additional standard deduction amount. This is the same additional amount as for age 65 or older, and the two can be combined if the taxpayer is both 65+ and blind.",
+        "required_citations": [
+            "IRS Pub. 501, Standard Deduction - Higher Standard Deduction for Blindness"
+        ],
+        "constraint_result": {
+            "eligible": true,
+            "conditions_met": [
+                "taxpayer_blind",
+                "additional_standard_deduction"
+            ]
+        },
+        "true_source_passages": [
+            {
+                "citation": "IRS Pub. 501, Standard Deduction - Higher Standard Deduction for Blindness",
+                "text": "If you are blind on the last day of the year and you don't itemize deductions, you are entitled to a higher standard deduction. You qualify if you are totally blind or your vision cannot be corrected beyond 20/200 in your better eye with glasses or contact lenses, or your field of vision is 20 degrees or less. The additional amount is the same as for taxpayers age 65 or older."
+            }
+        ],
+        "question_type": "eligibility_determination",
+        "source_type": "irs_pubs",
+        "difficulty": "easy",
+        "component_tested": [
+            "constraint_engine",
+            "generation"
+        ],
+        "source_case_id": "STD_65_BLIND_01",
+        "source_benchmark_file": "src/benchmarks/deduction_cases.json"
+    },
+    {
+        "id": "DED-STD-DEP-01",
+        "question": "If a person can be claimed as a dependent on someone else's return, can they still claim the full standard deduction?",
+        "answer": "No. If you can be claimed as a dependent by another taxpayer, your standard deduction is limited. It cannot exceed the greater of $1,350 or your earned income plus $450, up to the normal standard deduction amount.",
+        "required_citations": [
+            "IRS Pub. 501, Standard Deduction - Standard Deduction for Dependents"
+        ],
+        "constraint_result": {
+            "eligible": false,
+            "conditions_failed": [
+                "full_standard_deduction_not_available_as_dependent"
+            ]
+        },
+        "true_source_passages": [
+            {
+                "citation": "IRS Pub. 501, Standard Deduction - Standard Deduction for Dependents",
+                "text": "If another taxpayer can claim you as a dependent, your standard deduction may be limited. Your standard deduction is the greater of $1,350 or your earned income plus $450 (but not more than the basic standard deduction for your filing status)."
+            }
+        ],
+        "question_type": "eligibility_determination",
+        "source_type": "irs_pubs",
+        "difficulty": "medium",
+        "component_tested": [
+            "generation"
+        ]
+    },
+    {
+        "id": "DEP-QR-PASS-01",
+        "question": "Can a taxpayer claim an elderly parent who has gross income under $5,200, for whom the taxpayer provides more than half the support, and who is a U.S. citizen, as a qualifying relative?",
+        "answer": "Yes. The parent meets the qualifying relative tests: the relationship test (parent), the gross income test (under the exemption amount), the support test (taxpayer provides more than half), and the citizenship test. A parent does not have to live with the taxpayer to be a qualifying relative.",
+        "required_citations": [
+            "IRS Pub. 501, Dependents - Qualifying Relative"
+        ],
+        "constraint_result": {
+            "eligible": true,
+            "conditions_met": [
+                "relationship_test",
+                "gross_income_test",
+                "support_test",
+                "citizenship_test"
+            ]
+        },
+        "true_source_passages": [
+            {
+                "citation": "IRS Pub. 501, Dependents - Qualifying Relative",
+                "text": "A qualifying relative is a person who meets four tests: Not a qualifying child test, Member of household or relationship test, Gross income test, and Support test. The person's gross income for the year must be less than $5,200. You must generally provide more than half of the person's total support during the calendar year. Your parent does not have to live with you to meet the member of household or relationship test."
+            }
+        ],
+        "question_type": "eligibility_determination",
+        "source_type": "irs_pubs",
+        "difficulty": "medium",
+        "component_tested": [
+            "constraint_engine",
+            "generation"
+        ]
+    },
+    {
+        "id": "DEP-QR-INCOME-FAIL-01",
+        "question": "Can a person with gross income of $6,000 be claimed as a qualifying relative?",
+        "answer": "No. To be a qualifying relative, the person's gross income for the year must be less than the exemption amount ($5,200 for 2025). A person with $6,000 in gross income fails the gross income test.",
+        "required_citations": [
+            "IRS Pub. 501, Dependents - Qualifying Relative"
+        ],
+        "constraint_result": {
+            "eligible": false,
+            "conditions_met": [
+                "relationship_test",
+                "support_test"
+            ],
+            "conditions_failed": [
+                "gross_income_test"
+            ]
+        },
+        "true_source_passages": [
+            {
+                "citation": "IRS Pub. 501, Dependents - Qualifying Relative",
+                "text": "A qualifying relative is a person who meets four tests: Not a qualifying child test, Member of household or relationship test, Gross income test, and Support test. The person's gross income for the year must be less than $5,200."
+            }
+        ],
+        "question_type": "eligibility_determination",
+        "source_type": "irs_pubs",
+        "difficulty": "easy",
+        "component_tested": [
+            "constraint_engine",
+            "generation"
+        ]
+    },
+    {
+        "id": "DED-CHARITY-DOC-01",
+        "question": "What documentation is required to deduct a charitable cash contribution of $300?",
+        "answer": "For any cash contribution, you must maintain a bank record, receipt, or written communication from the charitable organization showing the name of the organization, date of the contribution, and amount. For contributions of $250 or more, you also need a contemporaneous written acknowledgment from the organization.",
+        "required_citations": [
+            "IRC \u00a7 170, Charitable Contributions"
+        ],
+        "constraint_result": {
+            "eligible": true,
+            "conditions_met": [
+                "cash_contribution",
+                "documentation_required"
+            ]
+        },
+        "true_source_passages": [
+            {
+                "citation": "IRC \u00a7 170, Charitable Contributions",
+                "text": "No deduction shall be allowed under subsection (a) for any contribution of $250 or more unless the taxpayer substantiates the contribution by a contemporaneous written acknowledgment of the contribution by the donee organization. A charitable contribution shall be allowable as a deduction only if verified under regulations prescribed by the Secretary."
+            }
+        ],
+        "question_type": "factual_lookup",
+        "source_type": "irc",
+        "difficulty": "medium",
+        "component_tested": [
+            "generation"
+        ]
+    },
+    {
+        "id": "DED-CHARITY-NODOC-01",
+        "question": "Can a taxpayer deduct a $500 cash charitable contribution if they have no receipt or written acknowledgment from the charity?",
+        "answer": "No. For any contribution of $250 or more, the taxpayer must have a contemporaneous written acknowledgment from the donee organization. Without documentation, the deduction is not allowed.",
+        "required_citations": [
+            "IRC \u00a7 170, Charitable Contributions"
+        ],
+        "constraint_result": {
+            "eligible": false,
+            "conditions_failed": [
+                "documentation_substantiation"
+            ]
+        },
+        "true_source_passages": [
+            {
+                "citation": "IRC \u00a7 170, Charitable Contributions",
+                "text": "No deduction shall be allowed under subsection (a) for any contribution of $250 or more unless the taxpayer substantiates the contribution by a contemporaneous written acknowledgment of the contribution by the donee organization."
+            }
+        ],
+        "question_type": "eligibility_determination",
+        "source_type": "irc",
+        "difficulty": "medium",
+        "component_tested": [
+            "constraint_engine",
+            "generation"
+        ]
+    },
+    {
+        "id": "FILE-SINGLE-THRESHOLD-01",
+        "question": "Must a single person under age 65 with gross income of $16,000 file a federal income tax return for 2025?",
+        "answer": "Yes. For 2025, a single person under 65 must file a return if gross income is at least $15,000 (the standard deduction amount). Since $16,000 exceeds this threshold, a return is required.",
+        "required_citations": [
+            "IRC \u00a7 6012, Persons Required to Make Returns"
+        ],
+        "constraint_result": {
+            "eligible": true,
+            "conditions_met": [
+                "income_exceeds_filing_threshold"
+            ]
+        },
+        "true_source_passages": [
+            {
+                "citation": "IRC \u00a7 6012, Persons Required to Make Returns",
+                "text": "Returns with respect to income taxes shall be made by every individual having for the taxable year gross income which equals or exceeds the exemption amount. Except as provided in this section, every individual who has gross income for the taxable year which equals or exceeds the sum of the exemption amount plus the basic standard deduction shall be required to make a return."
+            }
+        ],
+        "question_type": "eligibility_determination",
+        "source_type": "irc",
+        "difficulty": "easy",
+        "component_tested": [
+            "generation"
+        ]
+    },
+    {
+        "id": "FILE-BELOW-THRESHOLD-01",
+        "question": "Must a single person under age 65 with gross income of $12,000 file a federal income tax return for 2025?",
+        "answer": "Generally no. For 2025, a single person under 65 must file if gross income is at least $15,000. Since $12,000 is below this threshold, a return is generally not required unless special circumstances apply (such as self-employment income over $400).",
+        "required_citations": [
+            "IRC \u00a7 6012, Persons Required to Make Returns"
+        ],
+        "constraint_result": {
+            "eligible": false,
+            "conditions_met": [
+                "income_below_filing_threshold"
+            ]
+        },
+        "true_source_passages": [
+            {
+                "citation": "IRC \u00a7 6012, Persons Required to Make Returns",
+                "text": "Returns with respect to income taxes shall be made by every individual having for the taxable year gross income which equals or exceeds the exemption amount. Except as provided in this section, every individual who has gross income for the taxable year which equals or exceeds the sum of the exemption amount plus the basic standard deduction shall be required to make a return."
+            }
+        ],
+        "question_type": "eligibility_determination",
+        "source_type": "irc",
+        "difficulty": "easy",
+        "component_tested": [
+            "generation"
+        ]
+    },
+    {
+        "id": "FS-MARITAL-DEC31-01",
+        "question": "If a couple divorces on December 30, are they considered married or unmarried for tax purposes for that year?",
+        "answer": "They are considered unmarried. Marital status for tax purposes is determined as of the last day of the taxable year. Since they were divorced before December 31, they are unmarried for the entire year.",
+        "required_citations": [
+            "IRC \u00a7 7703, Determination of Marital Status"
+        ],
+        "constraint_result": {
+            "eligible": true,
+            "conditions_met": [
+                "unmarried_on_dec31"
+            ]
+        },
+        "true_source_passages": [
+            {
+                "citation": "IRC \u00a7 7703, Determination of Marital Status",
+                "text": "For purposes of this title, the determination of whether an individual is married shall be made as of the close of his taxable year; except that if his spouse dies during his taxable year such determination shall be made as of the time of such death. An individual legally separated from his spouse under a decree of divorce or of separate maintenance shall not be considered as married."
+            }
+        ],
+        "question_type": "factual_lookup",
+        "source_type": "irc",
+        "difficulty": "medium",
+        "component_tested": [
+            "generation"
+        ]
+    },
+    {
+        "id": "FS-MARITAL-SEPARATED-01",
+        "question": "Is a person who is legally separated under a decree of separate maintenance considered married for federal tax purposes?",
+        "answer": "No. An individual legally separated from their spouse under a decree of divorce or of separate maintenance is not considered married for federal tax purposes.",
+        "required_citations": [
+            "IRC \u00a7 7703, Determination of Marital Status"
+        ],
+        "constraint_result": {
+            "eligible": false,
+            "conditions_met": [
+                "legally_separated_decree"
+            ]
+        },
+        "true_source_passages": [
+            {
+                "citation": "IRC \u00a7 7703, Determination of Marital Status",
+                "text": "For purposes of this title, the determination of whether an individual is married shall be made as of the close of his taxable year. An individual legally separated from his spouse under a decree of divorce or of separate maintenance shall not be considered as married."
+            }
+        ],
+        "question_type": "eligibility_determination",
+        "source_type": "irc",
+        "difficulty": "easy",
+        "component_tested": [
+            "generation"
+        ]
+    },
+    {
+        "id": "FS-JOINT-DECEASED-01",
+        "question": "Can a taxpayer file a joint return if their spouse died during the tax year?",
+        "answer": "Yes. If your spouse died during the year, you are considered married for the whole year and can file a joint return for that year.",
+        "required_citations": [
+            "IRC \u00a7 6013, Joint Returns"
+        ],
+        "constraint_result": {
+            "eligible": true,
+            "conditions_met": [
+                "married_at_time_of_death",
+                "joint_return_for_year_of_death"
+            ]
+        },
+        "true_source_passages": [
+            {
+                "citation": "IRC \u00a7 6013, Joint Returns",
+                "text": "A husband and wife may make a single return jointly of income taxes. In the case of the death of one spouse or both spouses the joint return with respect to the decedent may be made only by his executor or administrator. If no return has been made by the decedent, the surviving spouse may make a joint return."
+            }
+        ],
+        "question_type": "eligibility_determination",
+        "source_type": "irc",
+        "difficulty": "medium",
+        "component_tested": [
+            "generation"
+        ]
+    },
+    {
+        "id": "DED-STD-DEF-01",
+        "question": "What is the standard deduction under the Internal Revenue Code?",
+        "answer": "The standard deduction is the sum of the basic standard deduction and the additional standard deduction. For a single individual, the basic standard deduction is adjusted annually for inflation.",
+        "required_citations": [
+            "IRC \u00a7 63, Standard Deduction"
+        ],
+        "constraint_result": {
+            "eligible": true,
+            "conditions_met": [
+                "standard_deduction_defined"
+            ]
+        },
+        "true_source_passages": [
+            {
+                "citation": "IRC \u00a7 63, Standard Deduction",
+                "text": "For purposes of this subtitle, the term 'standard deduction' means the sum of the basic standard deduction, and the additional standard deduction. The basic standard deduction is the applicable amount adjusted for inflation."
+            }
+        ],
+        "question_type": "factual_lookup",
+        "source_type": "irc",
+        "difficulty": "easy",
+        "component_tested": [
+            "generation"
+        ]
+    },
+    {
+        "id": "DEP-CITIZEN-FAIL-01",
+        "question": "Can a child who is not a U.S. citizen, U.S. national, or U.S. resident alien be claimed as a dependent?",
+        "answer": "Generally no. To be claimed as a dependent, a person must be a U.S. citizen, U.S. national, U.S. resident alien, or a resident of Canada or Mexico. A child who does not meet this citizenship or residency test cannot be claimed as a dependent.",
+        "required_citations": [
+            "IRS Pub. 501, Dependents - Qualifying Child"
+        ],
+        "constraint_result": {
+            "eligible": false,
+            "conditions_failed": [
+                "citizenship_or_residency_test"
+            ]
+        },
+        "true_source_passages": [
+            {
+                "citation": "IRS Pub. 501, Dependents - Qualifying Child",
+                "text": "To claim a person as a dependent, the person must be a U.S. citizen, U.S. national, U.S. resident alien, or a resident of Canada or Mexico. There is an exception for certain adopted children."
+            }
+        ],
+        "question_type": "eligibility_determination",
+        "source_type": "irs_pubs",
+        "difficulty": "medium",
+        "component_tested": [
+            "generation"
+        ]
+    },
+    {
+        "id": "FS-MFJ-NEG-01",
+        "question": "Can an unmarried person file as married filing jointly?",
+        "answer": "No. To file a joint return, you must be married on the last day of the tax year (or your spouse must have died during the year). An unmarried person cannot use the married filing jointly status.",
+        "required_citations": [
+            "IRS Pub. 501, Filing Status - Married Filing Jointly"
+        ],
+        "constraint_result": {
+            "eligible": false,
+            "conditions_failed": [
+                "not_married"
+            ]
+        },
+        "true_source_passages": [
+            {
+                "citation": "IRS Pub. 501, Filing Status - Married Filing Jointly",
+                "text": "If you are married, you and your spouse can choose to file a joint return. On a joint return, you report your combined income and deduct your combined allowable expenses. You can file a joint return even if one of you had no income or deductions."
+            }
+        ],
+        "question_type": "eligibility_determination",
+        "source_type": "irs_pubs",
+        "difficulty": "easy",
+        "component_tested": [
+            "constraint_engine",
+            "generation"
+        ],
+        "source_case_id": "MFJ_01",
+        "source_benchmark_file": "src/benchmarks/filing_status_cases.json"
+    },
+    {
+        "id": "DEP-QC-STUDENT-01",
+        "question": "Can a 22-year-old full-time college student who lives with the taxpayer, does not provide more than half their own support, and is a U.S. citizen be claimed as a qualifying child?",
+        "answer": "Yes. Although the child is over 18, a full-time student under age 24 at the end of the year meets the age test for a qualifying child. The child also meets the relationship, residency, support, and citizenship tests.",
+        "required_citations": [
+            "IRS Pub. 501, Dependents - Qualifying Child"
+        ],
+        "constraint_result": {
+            "eligible": true,
+            "conditions_met": [
+                "relationship_test",
+                "age_test_student_exception",
+                "residency_test",
+                "support_test",
+                "citizenship_test"
+            ]
+        },
+        "true_source_passages": [
+            {
+                "citation": "IRS Pub. 501, Dependents - Qualifying Child",
+                "text": "A qualifying child must satisfy four tests: Relationship Test, Age Test, Residency Test, and Support Test. Age: The child must be under age 19 at the end of the year, or under age 24 if a full-time student, or any age if permanently and totally disabled. Residency: The child must have lived with you for more than half of the year. Support: The child must not have provided more than half of his or her own support for the year."
+            }
+        ],
+        "question_type": "eligibility_determination",
+        "source_type": "irs_pubs",
+        "difficulty": "medium",
+        "component_tested": [
+            "constraint_engine",
+            "generation"
+        ],
+        "source_case_id": "QC_AGE_FAIL_01",
+        "source_benchmark_file": "src/benchmarks/dependency_cases.json"
+    }
+]

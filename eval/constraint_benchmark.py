@@ -63,6 +63,17 @@ def _to_element_set(value, *, missing: bool = False) -> set:
         return {str(value)}
 
 
+def _normalize_missing_prediction(expected_value, predicted_present: bool, predicted_value):
+    """Treat absent booleans/lists as their natural default for benchmark diffing."""
+    if predicted_present:
+        return predicted_value, False
+    if isinstance(expected_value, bool):
+        return False, True
+    if isinstance(expected_value, list):
+        return [], True
+    return predicted_value, False
+
+
 def diff_expected(predicted: dict, expected: dict) -> dict:
     """
     Compare predicted state against expected outputs.
@@ -80,6 +91,11 @@ def diff_expected(predicted: dict, expected: dict) -> dict:
     for key, expected_val in expected.items():
         predicted_present = key in predicted
         predicted_val = predicted.get(key)
+        predicted_val, defaulted_missing = _normalize_missing_prediction(
+            expected_val,
+            predicted_present,
+            predicted_val,
+        )
 
         # Key-level: exact match (sort lists for comparison)
         if isinstance(expected_val, list) and isinstance(predicted_val, list):
@@ -94,7 +110,10 @@ def diff_expected(predicted: dict, expected: dict) -> dict:
 
         # Element-level: set-based P/R for this key
         expected_set = _to_element_set(expected_val)
-        predicted_set = _to_element_set(predicted_val, missing=not predicted_present)
+        predicted_set = _to_element_set(
+            predicted_val,
+            missing=not predicted_present and not defaulted_missing,
+        )
 
         tp = len(expected_set & predicted_set)
         fp = len(predicted_set - expected_set)
@@ -109,6 +128,7 @@ def diff_expected(predicted: dict, expected: dict) -> dict:
             "expected": expected_val,
             "predicted": predicted_val,
             "match": key_match,
+            "defaulted_missing": defaulted_missing,
             "tp": tp, "fp": fp, "fn": fn,
         })
 
