@@ -24,11 +24,11 @@ BENCHMARKS_DIR = REPO_ROOT / "benchmarks"
 SOURCES_DIR = REPO_ROOT / "sources"
 RESULTS_DIR = REPO_ROOT / "eval" / "results"
 
-# -- RAGAS evaluator LLM --
-# This is the model RAGAS uses behind the scenes to grade outputs.
+# -- evaluator LLM --
+# This is the model used to grade outputs.
 # Different model family from the system LLM to avoid self-grading.
-EVALUATOR_MODEL = "gemini-2.5-flash"
-EVALUATOR_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
+EVALUATOR_MODEL = "gpt-4o-mini"
+EVALUATOR_BASE_URL = "https://api.openai.com/v1"
 
 # -- system / baseline LLM --
 # The model used for both baselines (zero-shot and given-right-sources).

@@ -37,7 +37,7 @@ def _get_answer_correctness_client():
         import os
         from openai import OpenAI
         from eval.config import EVALUATOR_BASE_URL
-        api_key = os.environ.get("GEMINI_API_KEY", "")
+        api_key = os.environ.get("OPENAI_API_KEY", "")
         _answer_correctness_client = OpenAI(api_key=api_key, base_url=EVALUATOR_BASE_URL)
     return _answer_correctness_client
 

@@ -1,12 +1,15 @@
 """
 Tree-based vs flat BM25 retrieval comparison.
 
-For each benchmark scenario, retrieves using both strategies:
-  - Tree: BM25 + title/trail heading boost (the system's actual strategy)
-  - Flat BM25: raw BM25 without structural boost
+For each IRS Publication benchmark scenario, retrieves using the same
+IRSPublicationRetriever path the prototype system uses, but with two
+deterministic configurations:
+  - Tree: current BM25 path with query augmentation, title/trail boost,
+    and shallow-node penalty
+  - Flat BM25: same retriever but text-only BM25 without structural boost
 
-Computes P@5, MRR, and per-scenario hit rates for both, then
-generates a comparison figure.
+The optional IRS LLM reranker is disabled for both modes so this remains a
+stable lexical retrieval comparison.
 
 Usage:
     python -m eval.retrieval_comparison
@@ -24,9 +27,27 @@ if str(ROOT) not in sys.path:
 
 from eval.loader import load_all_scenarios
 from eval.metrics.retrieval_metrics import precision_at_k, mrr
-from src.rag.bm25_rank import BM25Ranker, apply_title_trail_boost
 from src.rag.irs_pageindex import IRSPublicationRetriever
-from src.rag.client import HybridRetrievalClient
+
+
+def _search_citations(
+    retriever: IRSPublicationRetriever,
+    query: str,
+    top_k: int,
+    *,
+    flat_bm25: bool,
+) -> list[str]:
+    """Run the IRS retriever in a deterministic comparison mode and return citations."""
+    hits = retriever.search(
+        query,
+        top_k,
+        options={
+            "irs_flat_bm25": flat_bm25,
+            "irs_llm_rerank": False,
+            "irs_joint_refusal_augmentation": True,
+        },
+    )
+    return [retriever.citation_for(row) for _score, row in hits]
 
 
 def run_comparison(top_k: int = 5) -> dict:
@@ -74,12 +95,6 @@ def run_comparison(top_k: int = 5) -> dict:
         print("ERROR: No flat nodes available from PageIndex tree")
         return {}
 
-    # Build raw BM25 ranker on node texts (no title boost)
-    texts = [row.get("text", "") or row.get("title", "") for row in flat]
-    titles = [row.get("title", "") for row in flat]
-    trails = [row.get("trail", "") for row in flat]
-    bm25 = BM25Ranker(texts)
-
     results = []
     for s in irs_scenarios:
         sid = s["id"]
@@ -88,22 +103,9 @@ def run_comparison(top_k: int = 5) -> dict:
         if not gold:
             continue
 
-        # --- Tree strategy: BM25 + title/trail boost ---
-        raw_scores = bm25.search(query, top_k * 3)  # over-retrieve then boost
-        boosted = apply_title_trail_boost(query, raw_scores, titles, trails)
-        tree_citations = []
-        for idx, _score in boosted[:top_k]:
-            row = flat[idx]
-            cite = retriever.citation_for(row)
-            tree_citations.append(cite)
-
-        # --- Flat BM25: no title/trail boost ---
-        flat_scores = bm25.search(query, top_k)
-        flat_citations = []
-        for idx, _score in flat_scores:
-            row = flat[idx]
-            cite = retriever.citation_for(row)
-            flat_citations.append(cite)
+        # Compare the real IRS retriever path in two deterministic modes.
+        tree_citations = _search_citations(retriever, query, top_k, flat_bm25=False)
+        flat_citations = _search_citations(retriever, query, top_k, flat_bm25=True)
 
         # Score both
         tree_p5 = precision_at_k(tree_citations, gold, top_k)
@@ -143,6 +145,11 @@ def run_comparison(top_k: int = 5) -> dict:
         "tree_wins": sum(1 for r in results if r["tree"]["mrr"] > r["flat_bm25"]["mrr"]),
         "flat_wins": sum(1 for r in results if r["flat_bm25"]["mrr"] > r["tree"]["mrr"]),
         "ties": sum(1 for r in results if r["tree"]["mrr"] == r["flat_bm25"]["mrr"]),
+        "comparison_mode": {
+            "tree": "irs retriever with query augmentation + structural boost",
+            "flat_bm25": "irs retriever with query augmentation + text-only BM25",
+            "irs_llm_rerank": False,
+        },
     }
 
     print(f"\n--- Summary ({n} scenarios) ---")

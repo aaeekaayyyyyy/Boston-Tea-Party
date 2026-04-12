@@ -10,8 +10,9 @@ pip install -r requirements.txt
 # Local metric smoke check (LettuceDetect + legacy HHEM, no API key needed)
 python -m eval.smoke_test --hhem-only
 
-# Full smoke test (needs GEMINI_API_KEY)
+# Full smoke test (needs both GEMINI_API_KEY for generation and OPENAI_API_KEY for grading)
 export GEMINI_API_KEY=your-key
+export OPENAI_API_KEY=your-openai-key
 python -m eval.smoke_test
 
 # Standalone rule benchmark (separate from answer-generation eval)
@@ -19,6 +20,9 @@ python -m eval.constraint_benchmark
 
 # Run eval (uses LettuceDetect for hallucination)
 python -m eval.harness
+
+# Run the real planning-system eval (constraint engine + planning agent + hybrid retrieval)
+python -m eval.planning_system_eval
 
 # Legacy compatibility flag: skip faithfulness/API calls
 python -m eval.harness --hhem-only
@@ -41,6 +45,7 @@ Add to `.env` in repo root:
 
 ```
 GEMINI_API_KEY=AIza...
+OPENAI_API_KEY=sk-...
 ```
 
 ## Switching providers

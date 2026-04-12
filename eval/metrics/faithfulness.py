@@ -15,7 +15,7 @@ def _get_evaluator_llm():
     from ragas.llms import llm_factory
     from eval.config import EVALUATOR_MODEL, EVALUATOR_BASE_URL
 
-    api_key = os.environ.get("GEMINI_API_KEY", "")
+    api_key = os.environ.get("OPENAI_API_KEY", "")
     client = AsyncOpenAI(api_key=api_key, base_url=EVALUATOR_BASE_URL)
     # Raise max_tokens well above the default — RAGAS uses instructor internally
     # to parse structured outputs, and the default cap causes finish_reason='length'
